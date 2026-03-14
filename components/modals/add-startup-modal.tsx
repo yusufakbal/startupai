@@ -98,26 +98,37 @@ export function AddStartupModal({
         return;
       }
 
-      const { error } = await supabase.from("startups").insert({
-        user_id: user.id,
-        name: formData.businessName,
-        description: formData.description,
-        industry: formData.industry,
-        stage: "Idea",
-        main_goal: formData.mainGoal,
-        target_audience: formData.targetAudience || formData.targetCustomer,
-        main_problem: formData.customerProblem,
-        market_size: formData.marketSize,
-        users_count: formData.users || 0,
-        revenue: formData.revenue || 0,
-        growth_rate: 0,
-      });
+      const { data: savedStartup, error: insertError } = await supabase
+        .from("startups")
+        .insert({
+          user_id: user.id,
+          name: formData.businessName,
+          description: formData.description,
+          industry: formData.industry,
+          stage: "Idea",
+          main_goal: formData.mainGoal,
+          target_audience: formData.targetAudience || formData.targetCustomer,
+          main_problem: formData.customerProblem,
+          market_size: formData.marketSize,
+          users_count: formData.users || 0,
+          revenue: formData.revenue || 0,
+          growth_rate: 0,
+        })
+        .select()
+        .single();
 
-      if (error) {
-        setError("Kayıt sırasında hata oluştu: " + error.message);
+      if (insertError || !savedStartup) {
+        setError("Kayıt sırasında hata oluştu: " + insertError?.message);
         setLoading(false);
         return;
       }
+
+      // Kayıt başarılı, arka planda analiz başlat
+      fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startup_id: savedStartup.id }),
+      });
 
       onComplete?.();
       onOpenChange(false);
