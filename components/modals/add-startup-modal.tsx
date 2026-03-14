@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Check, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ export function AddStartupModal({
   onOpenChange,
   onComplete,
 }: AddStartupModalProps) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<StartupFormData>>({});
   const [loading, setLoading] = useState(false);
@@ -123,18 +125,12 @@ export function AddStartupModal({
         return;
       }
 
-      // Kayıt başarılı, arka planda analiz başlat
-      fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ startup_id: savedStartup.id }),
-      });
-
       onComplete?.();
       onOpenChange(false);
       setCurrentStep(1);
       setFormData({});
       setLoading(false);
+      router.push(`/analysis/${savedStartup.id}`);
     }
   };
 
