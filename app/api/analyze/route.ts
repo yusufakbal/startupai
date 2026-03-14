@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    // Kullanıcıyı al
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -35,7 +34,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Startup bilgilerini al
     const { data: startup, error: startupError } = await supabase
       .from("startups")
       .select("*")
@@ -50,7 +48,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Mevcut analiz var mı kontrol et
     const { data: existingAnalysis } = await supabase
       .from("analyses")
       .select("*")
@@ -66,7 +63,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Claude'a analiz yaptır
     const prompt = `You are an expert startup advisor. Analyze the following startup thoroughly.
 
 Startup Information:
@@ -92,9 +88,19 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
   "weaknesses": ["<weakness1>", "<weakness2>", "<weakness3>"],
   "opportunities": ["<opportunity1>", "<opportunity2>", "<opportunity3>"],
   "recommendations": ["<rec1>", "<rec2>", "<rec3>", "<rec4>", "<rec5>"],
-  "market_size_estimate": "<market size estimate>",
-  "market_growth_rate": "<annual growth rate>",
+  "market_size_estimate": "<market size estimate e.g. $4.2B>",
+  "market_growth_rate": "<annual growth rate e.g. +12.5%>",
   "target_segment": "<primary target segment>",
+  "market_drivers": ["<driver1>", "<driver2>", "<driver3>"],
+  "key_risks": ["<risk1>", "<risk2>", "<risk3>"],
+  "competitors": [
+    {
+      "name": "<competitor name>",
+      "strength": "<main strength>",
+      "weakness": "<main weakness>",
+      "position": "<Leader|Challenger|Niche|Follower>"
+    }
+  ],
   "roadmap": [
     {
       "phase": 1,
@@ -132,7 +138,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     const cleanJson = content.text.replace(/```json\n?|\n?```/g, "").trim();
     const aiResult = JSON.parse(cleanJson);
 
-    // Supabase'e kaydet
     const { data: savedAnalysis, error: saveError } = await supabase
       .from("analyses")
       .insert({
@@ -151,6 +156,9 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
         market_size_estimate: aiResult.market_size_estimate,
         market_growth_rate: aiResult.market_growth_rate,
         target_segment: aiResult.target_segment,
+        market_drivers: aiResult.market_drivers,
+        key_risks: aiResult.key_risks,
+        competitors: aiResult.competitors,
         roadmap: aiResult.roadmap,
       })
       .select()
