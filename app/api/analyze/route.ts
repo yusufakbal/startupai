@@ -64,7 +64,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (existingAnalysis && force) {
-      await supabase.from("analyses").delete().eq("startup_id", startup_id);
+      await supabase
+        .from("analyses")
+        .delete()
+        .eq("startup_id", startup_id)
+        .eq("user_id", user.id);
     }
 
     const prompt = `You are an expert startup advisor. Analyze the following startup thoroughly.
@@ -144,7 +148,7 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
 
     const { data: savedAnalysis, error: saveError } = await supabase
       .from("analyses")
-      .insert({
+      .upsert({
         startup_id: startup.id,
         user_id: user.id,
         score: aiResult.score,
