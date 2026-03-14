@@ -1,56 +1,54 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Check, ChevronRight, ChevronLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase";
 
 interface AddStartupModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onComplete?: (data: StartupFormData) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onComplete?: () => void;
 }
 
 export interface StartupFormData {
-  // Step 1
-  businessName: string
-  industry: string
-  description: string
-  mainGoal: string
-  targetCustomer: string
-  // Step 2
-  targetAudience: string
-  marketSize: string
-  customerProblem: string
-  // Step 3
-  users?: number
-  revenue?: number
-  monthlySales?: number
-  traffic?: number
-  conversionRate?: number
+  businessName: string;
+  industry: string;
+  description: string;
+  mainGoal: string;
+  targetCustomer: string;
+  targetAudience: string;
+  marketSize: string;
+  customerProblem: string;
+  users?: number;
+  revenue?: number;
+  monthlySales?: number;
+  traffic?: number;
+  conversionRate?: number;
 }
 
 const steps = [
   { id: 1, title: "Business Info", description: "Tell us about your startup" },
   { id: 2, title: "Market Info", description: "Define your market" },
   { id: 3, title: "Metrics", description: "Optional performance data" },
-]
+];
 
 const industries = [
   "SaaS",
@@ -63,42 +61,87 @@ const industries = [
   "Marketplace",
   "Hardware",
   "Other",
-]
+];
 
-export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupModalProps) {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [formData, setFormData] = useState<Partial<StartupFormData>>({})
+export function AddStartupModal({
+  open,
+  onOpenChange,
+  onComplete,
+}: AddStartupModalProps) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState<Partial<StartupFormData>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const updateField = (field: keyof StartupFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  const updateField = (
+    field: keyof StartupFormData,
+    value: string | number
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < 3) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     } else {
-      onComplete?.(formData as StartupFormData)
-      onOpenChange(false)
-      setCurrentStep(1)
-      setFormData({})
+      setLoading(true);
+      setError("");
+
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setError("Oturum bulunamadı, lütfen tekrar giriş yapın.");
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.from("startups").insert({
+        user_id: user.id,
+        name: formData.businessName,
+        description: formData.description,
+        industry: formData.industry,
+        stage: "Idea",
+        main_goal: formData.mainGoal,
+        target_audience: formData.targetAudience || formData.targetCustomer,
+        main_problem: formData.customerProblem,
+        market_size: formData.marketSize,
+        users_count: formData.users || 0,
+        revenue: formData.revenue || 0,
+        growth_rate: 0,
+      });
+
+      if (error) {
+        setError("Kayıt sırasında hata oluştu: " + error.message);
+        setLoading(false);
+        return;
+      }
+
+      onComplete?.();
+      onOpenChange(false);
+      setCurrentStep(1);
+      setFormData({});
+      setLoading(false);
     }
-  }
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const canProceed = () => {
     if (currentStep === 1) {
-      return formData.businessName && formData.industry && formData.description
+      return formData.businessName && formData.industry && formData.description;
     }
     if (currentStep === 2) {
-      return formData.targetAudience && formData.customerProblem
+      return formData.targetAudience && formData.customerProblem;
     }
-    return true
-  }
+    return true;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,19 +165,33 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
                       : "bg-secondary text-muted-foreground"
                   )}
                 >
-                  {currentStep > step.id ? <Check className="w-4 h-4" /> : step.id}
+                  {currentStep > step.id ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    step.id
+                  )}
                 </div>
-                <span className="text-xs mt-1.5 text-muted-foreground hidden sm:block">{step.title}</span>
+                <span className="text-xs mt-1.5 text-muted-foreground hidden sm:block">
+                  {step.title}
+                </span>
               </div>
               {index < steps.length - 1 && (
-                <div className={cn(
-                  "w-12 sm:w-20 h-0.5 mx-2",
-                  currentStep > step.id ? "bg-primary" : "bg-secondary"
-                )} />
+                <div
+                  className={cn(
+                    "w-12 sm:w-20 h-0.5 mx-2",
+                    currentStep > step.id ? "bg-primary" : "bg-secondary"
+                  )}
+                />
               )}
             </div>
           ))}
         </div>
+
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm mb-4">
+            {error}
+          </div>
+        )}
 
         {/* Step 1: Business Info */}
         {currentStep === 1 && (
@@ -244,7 +301,8 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
         {currentStep === 3 && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground mb-4">
-              These metrics are optional but help provide more accurate analysis.
+              These metrics are optional but help provide more accurate
+              analysis.
             </p>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -254,7 +312,9 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
                   type="number"
                   placeholder="0"
                   value={formData.users || ""}
-                  onChange={(e) => updateField("users", parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateField("users", parseInt(e.target.value) || 0)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -264,7 +324,9 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
                   type="number"
                   placeholder="0"
                   value={formData.revenue || ""}
-                  onChange={(e) => updateField("revenue", parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateField("revenue", parseInt(e.target.value) || 0)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -274,7 +336,9 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
                   type="number"
                   placeholder="0"
                   value={formData.monthlySales || ""}
-                  onChange={(e) => updateField("monthlySales", parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateField("monthlySales", parseInt(e.target.value) || 0)
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -284,7 +348,9 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
                   type="number"
                   placeholder="0"
                   value={formData.traffic || ""}
-                  onChange={(e) => updateField("traffic", parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    updateField("traffic", parseInt(e.target.value) || 0)
+                  }
                 />
               </div>
             </div>
@@ -296,7 +362,9 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
                 step="0.1"
                 placeholder="0"
                 value={formData.conversionRate || ""}
-                onChange={(e) => updateField("conversionRate", parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  updateField("conversionRate", parseFloat(e.target.value) || 0)
+                }
               />
             </div>
           </div>
@@ -312,12 +380,16 @@ export function AddStartupModal({ open, onOpenChange, onComplete }: AddStartupMo
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back
           </Button>
-          <Button onClick={handleNext} disabled={!canProceed()}>
-            {currentStep === 3 ? "Create Startup" : "Next"}
+          <Button onClick={handleNext} disabled={!canProceed() || loading}>
+            {loading
+              ? "Kaydediliyor..."
+              : currentStep === 3
+              ? "Create Startup"
+              : "Next"}
             {currentStep < 3 && <ChevronRight className="w-4 h-4 ml-1" />}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
