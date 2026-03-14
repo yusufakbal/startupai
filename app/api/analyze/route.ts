@@ -63,14 +63,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (existingAnalysis && force) {
-      await supabase
-        .from("analyses")
-        .delete()
-        .eq("startup_id", startup_id)
-        .eq("user_id", user.id);
-    }
-
     const prompt = `You are an expert startup advisor. Analyze the following startup thoroughly.
 
 Startup Information:
@@ -146,31 +138,49 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     const cleanJson = content.text.replace(/```json\n?|\n?```/g, "").trim();
     const aiResult = JSON.parse(cleanJson);
 
-    const { data: savedAnalysis, error: saveError } = await supabase
-      .from("analyses")
-      .upsert({
-        startup_id: startup.id,
-        user_id: user.id,
-        score: aiResult.score,
-        market_score: aiResult.market_score,
-        competition_score: aiResult.competition_score,
-        growth_potential: aiResult.growth_potential,
-        competition_level: aiResult.competition_level,
-        summary: aiResult.summary,
-        strengths: aiResult.strengths,
-        weaknesses: aiResult.weaknesses,
-        opportunities: aiResult.opportunities,
-        recommendations: aiResult.recommendations,
-        market_size_estimate: aiResult.market_size_estimate,
-        market_growth_rate: aiResult.market_growth_rate,
-        target_segment: aiResult.target_segment,
-        market_drivers: aiResult.market_drivers,
-        key_risks: aiResult.key_risks,
-        competitors: aiResult.competitors,
-        roadmap: aiResult.roadmap,
-      })
-      .select()
-      .single();
+    const analysisData = {
+      startup_id: startup.id,
+      user_id: user.id,
+      score: aiResult.score,
+      market_score: aiResult.market_score,
+      competition_score: aiResult.competition_score,
+      growth_potential: aiResult.growth_potential,
+      competition_level: aiResult.competition_level,
+      summary: aiResult.summary,
+      strengths: aiResult.strengths,
+      weaknesses: aiResult.weaknesses,
+      opportunities: aiResult.opportunities,
+      recommendations: aiResult.recommendations,
+      market_size_estimate: aiResult.market_size_estimate,
+      market_growth_rate: aiResult.market_growth_rate,
+      target_segment: aiResult.target_segment,
+      market_drivers: aiResult.market_drivers,
+      key_risks: aiResult.key_risks,
+      competitors: aiResult.competitors,
+      roadmap: aiResult.roadmap,
+      updated_at: new Date().toISOString(),
+    };
+
+    let savedAnalysis, saveError;
+
+    if (existingAnalysis) {
+      const { data, error } = await supabase
+        .from("analyses")
+        .update(analysisData)
+        .eq("id", existingAnalysis.id)
+        .select()
+        .single();
+      savedAnalysis = data;
+      saveError = error;
+    } else {
+      const { data, error } = await supabase
+        .from("analyses")
+        .insert(analysisData)
+        .select()
+        .single();
+      savedAnalysis = data;
+      saveError = error;
+    }
 
     if (saveError) {
       throw new Error("Failed to save analysis: " + saveError.message);
