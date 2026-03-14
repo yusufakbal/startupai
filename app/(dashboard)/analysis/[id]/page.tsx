@@ -84,16 +84,13 @@ export default function AnalysisDetailPage({
   const generateAnalysis = async () => {
     setGenerating(true);
     setError("");
-
-    // Önce mevcut analizi sil (yeniden analiz için)
-    const supabase = createClient();
-    await supabase.from("analyses").delete().eq("startup_id", id);
+    setAnalysis(null);
 
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ startup_id: id }),
+        body: JSON.stringify({ startup_id: id, force: true }),
       });
 
       const data = await res.json();
@@ -210,15 +207,15 @@ export default function AnalysisDetailPage({
         {/* Score Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <BarChart2 className="w-4 h-4" />
+            <CardContent className="p-4">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                <BarChart2 className="w-3.5 h-3.5" />
                 Startup Score
               </div>
-              <div className="text-3xl font-bold text-primary">
+              <div className="text-2xl font-bold text-primary">
                 {analysis?.score}
               </div>
-              <div className="text-sm text-muted-foreground">/ 10</div>
+              <div className="text-xs text-muted-foreground">/ 10</div>
             </CardContent>
           </Card>
           <MetricCard

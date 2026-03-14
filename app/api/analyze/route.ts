@@ -9,7 +9,7 @@ const anthropic = new Anthropic({
 
 export async function POST(req: NextRequest) {
   try {
-    const { startup_id } = await req.json();
+    const { startup_id, force } = await req.json();
 
     const cookieStore = await cookies();
     const supabase = createServerClient(
@@ -55,12 +55,16 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
-    if (existingAnalysis) {
+    if (existingAnalysis && !force) {
       return NextResponse.json({
         success: true,
         analysis: existingAnalysis,
         cached: true,
       });
+    }
+
+    if (existingAnalysis && force) {
+      await supabase.from("analyses").delete().eq("startup_id", startup_id);
     }
 
     const prompt = `You are an expert startup advisor. Analyze the following startup thoroughly.
