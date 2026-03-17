@@ -1,9 +1,11 @@
 "use client"
 
-import { Users, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Users, DollarSign, BarChart2, Flag, Loader2 } from "lucide-react"
 import { TopNav } from "@/components/layout/top-nav"
+import { InsightCard } from "@/components/cards/insight-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -11,250 +13,252 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { createClient } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 
-const metrics = {
-  totalUsers: { value: 18340, change: 12.5, trend: "up" as const },
-  totalRevenue: { value: 100700, change: 8.2, trend: "up" as const },
-  avgGrowth: { value: 34, change: -2.1, trend: "down" as const },
-  activeStartups: { value: 4, change: 0, trend: "neutral" as const },
+const positionColors: Record<string, string> = {
+  Leader: "bg-indigo/10 text-indigo border-indigo/20",
+  Challenger: "bg-amber/10 text-amber border-amber/20",
+  Niche: "bg-violet/10 text-violet border-violet/20",
+  Follower: "bg-secondary text-secondary-foreground",
 }
 
-const startupMetrics = [
-  {
-    name: "TechFlow AI",
-    users: 2450,
-    revenue: 12500,
-    growth: 23,
-    conversion: 4.2,
-    churn: 2.1,
-  },
-  {
-    name: "GreenCommute",
-    users: 890,
-    revenue: 3200,
-    growth: 45,
-    conversion: 3.8,
-    churn: 3.5,
-  },
-  {
-    name: "HealthSync",
-    users: 0,
-    revenue: 0,
-    growth: 0,
-    conversion: 0,
-    churn: 0,
-  },
-  {
-    name: "EduMentor",
-    users: 15000,
-    revenue: 85000,
-    growth: 67,
-    conversion: 5.5,
-    churn: 1.2,
-  },
-]
-
-const monthlyData = [
-  { month: "Sep", users: 8500, revenue: 45000 },
-  { month: "Oct", users: 10200, revenue: 58000 },
-  { month: "Nov", users: 12800, revenue: 72000 },
-  { month: "Dec", users: 14500, revenue: 82000 },
-  { month: "Jan", users: 16100, revenue: 91000 },
-  { month: "Feb", users: 18340, revenue: 100700 },
-]
-
 export default function MetricsPage() {
+  const [startups, setStartups] = useState<any[]>([])
+  const [selectedId, setSelectedId] = useState<string>("")
+  const [startup, setStartup] = useState<any>(null)
+  const [analysis, setAnalysis] = useState<any>(null)
+  const [roadmap, setRoadmap] = useState<any>(null)
+  const [tasks, setTasks] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [detailLoading, setDetailLoading] = useState(false)
+
+  useEffect(() => {
+    loadStartups()
+  }, [])
+
+  useEffect(() => {
+    if (selectedId) loadDetail(selectedId)
+  }, [selectedId])
+
+  const loadStartups = async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data } = await supabase
+      .from("startups")
+      .select("id, name")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+
+    if (data && data.length > 0) {
+      setStartups(data)
+      setSelectedId(data[0].id)
+    }
+    setLoading(false)
+  }
+
+  const loadDetail = async (startupId: string) => {
+    setDetailLoading(true)
+    const supabase = createClient()
+
+    const { data: startupData } = await supabase
+      .from("startups")
+      .select("*")
+      .eq("id", startupId)
+      .single()
+
+    const { data: analysisData } = await supabase
+      .from("analyses")
+      .select("*")
+      .eq("startup_id", startupId)
+      .single()
+
+    const { data: roadmapData } = await supabase
+      .from("roadmaps")
+      .select("*")
+      .eq("startup_id", startupId)
+      .single()
+
+    let tasksData: any[] = []
+    if (roadmapData) {
+      const { data: t } = await supabase
+        .from("roadmap_tasks")
+        .select("status")
+        .eq("roadmap_id", roadmapData.id)
+      tasksData = t || []
+    }
+
+    setStartup(startupData)
+    setAnalysis(analysisData)
+    setRoadmap(roadmapData)
+    setTasks(tasksData)
+    setDetailLoading(false)
+  }
+
+  const completedTasks = tasks.filter((t) => t.status === "done").length
+  const totalTasks = tasks.length
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <TopNav />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen">
       <TopNav />
-      
+
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Metrics Dashboard</h1>
-            <p className="text-muted-foreground">Track performance across all your startups</p>
-          </div>
-          <Select defaultValue="6m">
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Time range" />
+        {/* Startup Seçici + Başlık */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <Select value={selectedId} onValueChange={setSelectedId}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Startup seç" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="3m">Last 3 months</SelectItem>
-              <SelectItem value="6m">Last 6 months</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
+              {startups.map((s) => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
+          {startup && (
+            <h1 className="text-2xl font-bold text-foreground">{startup.name}</h1>
+          )}
         </div>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-indigo/10">
-                  <Users className="w-5 h-5 text-indigo" />
-                </div>
-                <div className={cn(
-                  "flex items-center gap-1 text-sm font-medium",
-                  metrics.totalUsers.trend === "up" ? "text-emerald" : "text-destructive"
-                )}>
-                  {metrics.totalUsers.trend === "up" ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )}
-                  {metrics.totalUsers.change}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold">{metrics.totalUsers.value.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Total Users</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-emerald/10">
-                  <DollarSign className="w-5 h-5 text-emerald" />
-                </div>
-                <div className={cn(
-                  "flex items-center gap-1 text-sm font-medium",
-                  metrics.totalRevenue.trend === "up" ? "text-emerald" : "text-destructive"
-                )}>
-                  <ArrowUpRight className="w-4 h-4" />
-                  {metrics.totalRevenue.change}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold">${(metrics.totalRevenue.value / 1000).toFixed(1)}K</div>
-              <div className="text-sm text-muted-foreground">Total Revenue</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-amber/10">
-                  <TrendingUp className="w-5 h-5 text-amber" />
-                </div>
-                <div className={cn(
-                  "flex items-center gap-1 text-sm font-medium",
-                  metrics.avgGrowth.trend === "up" ? "text-emerald" : "text-destructive"
-                )}>
-                  <ArrowDownRight className="w-4 h-4" />
-                  {Math.abs(metrics.avgGrowth.change)}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold">{metrics.avgGrowth.value}%</div>
-              <div className="text-sm text-muted-foreground">Avg Growth Rate</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 rounded-lg bg-violet/10">
-                  <Activity className="w-5 h-5 text-violet" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold">{metrics.activeStartups.value}</div>
-              <div className="text-sm text-muted-foreground">Active Startups</div>
-            </CardContent>
-          </Card>
-        </div>
+        {detailLoading ? (
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        ) : startup ? (
+          <div className="space-y-8">
 
-        {/* Charts */}
-        <Tabs defaultValue="users" className="mb-8">
-          <TabsList>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
-          </TabsList>
-          <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Growth</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-end gap-2">
-                  {monthlyData.map((data, i) => (
-                    <div key={data.month} className="flex-1 flex flex-col items-center gap-2">
-                      <div 
-                        className="w-full bg-primary/20 hover:bg-primary/40 rounded-t transition-colors"
-                        style={{ height: `${(data.users / 20000) * 100}%` }}
-                      />
-                      <span className="text-xs text-muted-foreground">{data.month}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="revenue">
-            <Card>
-              <CardHeader>
-                <CardTitle>Revenue Growth</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-end gap-2">
-                  {monthlyData.map((data) => (
-                    <div key={data.month} className="flex-1 flex flex-col items-center gap-2">
-                      <div 
-                        className="w-full bg-emerald/20 hover:bg-emerald/40 rounded-t transition-colors"
-                        style={{ height: `${(data.revenue / 120000) * 100}%` }}
-                      />
-                      <span className="text-xs text-muted-foreground">{data.month}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            {/* AI Strategic Insight */}
+            {analysis?.summary && (
+              <InsightCard
+                title="AI Strategic Insight"
+                content={analysis.summary}
+                type="ai"
+              />
+            )}
 
-        {/* Startup Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Startup Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Startup</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Users</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Revenue</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Growth</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Conversion</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Churn</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {startupMetrics.map((startup) => (
-                    <tr key={startup.name} className="border-b last:border-0">
-                      <td className="py-3 px-4 font-medium">{startup.name}</td>
-                      <td className="py-3 px-4 text-right">{startup.users.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-right">${startup.revenue.toLocaleString()}</td>
-                      <td className={cn(
-                        "py-3 px-4 text-right font-medium",
-                        startup.growth > 0 ? "text-emerald" : startup.growth < 0 ? "text-destructive" : "text-muted-foreground"
-                      )}>
-                        {startup.growth > 0 ? "+" : ""}{startup.growth}%
-                      </td>
-                      <td className="py-3 px-4 text-right">{startup.conversion}%</td>
-                      <td className={cn(
-                        "py-3 px-4 text-right",
-                        startup.churn > 3 ? "text-destructive" : "text-muted-foreground"
-                      )}>
-                        {startup.churn}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Metrik Kartları */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="p-2 rounded-lg bg-indigo/10">
+                      <Users className="w-5 h-5 text-indigo" />
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {(startup.users_count || 0).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Users</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="p-2 rounded-lg bg-emerald/10">
+                      <DollarSign className="w-5 h-5 text-emerald" />
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    ${((startup.revenue || 0) / 1000).toFixed(1)}K
+                  </div>
+                  <div className="text-sm text-muted-foreground">Monthly Revenue</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="p-2 rounded-lg bg-violet/10">
+                      <BarChart2 className="w-5 h-5 text-violet" />
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold text-violet">
+                    {analysis?.score ?? "—"}/10
+                  </div>
+                  <div className="text-sm text-muted-foreground">AI Score</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Flag className="w-5 h-5 text-primary" />
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {totalTasks > 0 ? `${completedTasks}/${totalTasks}` : "—"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Tasks Completed</div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* AI Recommendation */}
+            {roadmap?.ai_recommendation && (
+              <InsightCard
+                title="AI Recommendation"
+                content={roadmap.ai_recommendation}
+                type="opportunity"
+              />
+            )}
+
+            {/* Rakip Analizi — Yatay Kaydırmalı */}
+            {analysis?.competitors && analysis.competitors.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Competitor Analysis</h2>
+                <div className="flex gap-4 overflow-x-auto pb-4">
+                  {analysis.competitors.map((competitor: any, i: number) => (
+                    <Card key={i} className="shrink-0 w-64">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <CardTitle className="text-sm font-semibold truncate">
+                            {competitor.name}
+                          </CardTitle>
+                          <Badge
+                            variant="outline"
+                            className={cn("text-xs shrink-0", positionColors[competitor.position] || "bg-secondary")}
+                          >
+                            {competitor.position}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Strength</div>
+                          <p className="text-sm text-emerald leading-snug">{competitor.strength}</p>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Weakness</div>
+                          <p className="text-sm text-destructive leading-snug">{competitor.weakness}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+        ) : (
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <p className="text-muted-foreground">Henüz startup eklenmemiş.</p>
+          </div>
+        )}
       </main>
     </div>
   )
