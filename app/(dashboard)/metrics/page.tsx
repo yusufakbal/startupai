@@ -1,104 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Users, DollarSign, BarChart2, Flag, Loader2 } from "lucide-react"
-import { TopNav } from "@/components/layout/top-nav"
-import { InsightCard } from "@/components/cards/insight-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { Users, DollarSign, BarChart2, Flag, Loader2 } from "lucide-react";
+import { TopNav } from "@/components/layout/top-nav";
+import { InsightCard } from "@/components/cards/insight-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { createClient } from "@/lib/supabase"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/select";
+import { createClient } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 const positionColors: Record<string, string> = {
   Leader: "bg-indigo/10 text-indigo border-indigo/20",
   Challenger: "bg-amber/10 text-amber border-amber/20",
   Niche: "bg-violet/10 text-violet border-violet/20",
   Follower: "bg-secondary text-secondary-foreground",
-}
+};
 
 export default function MetricsPage() {
-  const [startups, setStartups] = useState<any[]>([])
-  const [selectedId, setSelectedId] = useState<string>("")
-  const [startup, setStartup] = useState<any>(null)
-  const [analysis, setAnalysis] = useState<any>(null)
-  const [roadmap, setRoadmap] = useState<any>(null)
-  const [tasks, setTasks] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [detailLoading, setDetailLoading] = useState(false)
+  const [startups, setStartups] = useState<any[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [startup, setStartup] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [roadmap, setRoadmap] = useState<any>(null);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
-    loadStartups()
-  }, [])
+    loadStartups();
+  }, []);
 
   useEffect(() => {
-    if (selectedId) loadDetail(selectedId)
-  }, [selectedId])
+    if (selectedId) loadDetail(selectedId);
+  }, [selectedId]);
 
   const loadStartups = async () => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
     const { data } = await supabase
       .from("startups")
       .select("id, name")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: false });
 
     if (data && data.length > 0) {
-      setStartups(data)
-      setSelectedId(data[0].id)
+      setStartups(data);
+      setSelectedId(data[0].id);
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const loadDetail = async (startupId: string) => {
-    setDetailLoading(true)
-    const supabase = createClient()
+    setDetailLoading(true);
+    const supabase = createClient();
 
     const { data: startupData } = await supabase
       .from("startups")
       .select("*")
       .eq("id", startupId)
-      .single()
+      .single();
 
     const { data: analysisData } = await supabase
       .from("analyses")
       .select("*")
       .eq("startup_id", startupId)
-      .single()
+      .single();
 
     const { data: roadmapData } = await supabase
       .from("roadmaps")
       .select("*")
       .eq("startup_id", startupId)
-      .single()
+      .single();
 
-    let tasksData: any[] = []
+    let tasksData: any[] = [];
     if (roadmapData) {
       const { data: t } = await supabase
         .from("roadmap_tasks")
         .select("status")
-        .eq("roadmap_id", roadmapData.id)
-      tasksData = t || []
+        .eq("roadmap_id", roadmapData.id);
+      tasksData = t || [];
     }
 
-    setStartup(startupData)
-    setAnalysis(analysisData)
-    setRoadmap(roadmapData)
-    setTasks(tasksData)
-    setDetailLoading(false)
-  }
+    setStartup(startupData);
+    setAnalysis(analysisData);
+    setRoadmap(roadmapData);
+    setTasks(tasksData);
+    setDetailLoading(false);
+  };
 
-  const completedTasks = tasks.filter((t) => t.status === "done").length
-  const totalTasks = tasks.length
+  const completedTasks = tasks.filter((t) => t.status === "done").length;
+  const totalTasks = tasks.length;
 
   if (loading) {
     return (
@@ -108,7 +110,7 @@ export default function MetricsPage() {
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -124,12 +126,16 @@ export default function MetricsPage() {
             </SelectTrigger>
             <SelectContent>
               {startups.map((s) => (
-                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {startup && (
-            <h1 className="text-2xl font-bold text-foreground">{startup.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {startup.name}
+            </h1>
           )}
         </div>
 
@@ -139,7 +145,6 @@ export default function MetricsPage() {
           </div>
         ) : startup ? (
           <div className="space-y-8">
-
             {/* AI Strategic Insight */}
             {analysis?.summary && (
               <InsightCard
@@ -175,7 +180,9 @@ export default function MetricsPage() {
                   <div className="text-2xl font-bold">
                     ${((startup.revenue || 0) / 1000).toFixed(1)}K
                   </div>
-                  <div className="text-sm text-muted-foreground">Monthly Revenue</div>
+                  <div className="text-sm text-muted-foreground">
+                    Monthly Revenue
+                  </div>
                 </CardContent>
               </Card>
 
@@ -203,7 +210,9 @@ export default function MetricsPage() {
                   <div className="text-2xl font-bold">
                     {totalTasks > 0 ? `${completedTasks}/${totalTasks}` : "—"}
                   </div>
-                  <div className="text-sm text-muted-foreground">Tasks Completed</div>
+                  <div className="text-sm text-muted-foreground">
+                    Tasks Completed
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -220,18 +229,24 @@ export default function MetricsPage() {
             {/* Rakip Analizi — Yatay Kaydırmalı */}
             {analysis?.competitors && analysis.competitors.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-4">Competitor Analysis</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4">
+                <h2 className="text-lg font-semibold mb-4">
+                  Competitor Analysis
+                </h2>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {analysis.competitors.map((competitor: any, i: number) => (
-                    <Card key={i} className="shrink-0 w-64">
+                    <Card key={i} className="shrink-0 w-72">
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between gap-2">
-                          <CardTitle className="text-sm font-semibold truncate">
+                          <CardTitle className="text-sm font-semibold line-clamp-2 leading-snug">
                             {competitor.name}
                           </CardTitle>
                           <Badge
                             variant="outline"
-                            className={cn("text-xs shrink-0", positionColors[competitor.position] || "bg-secondary")}
+                            className={cn(
+                              "text-xs shrink-0",
+                              positionColors[competitor.position] ||
+                                "bg-secondary"
+                            )}
                           >
                             {competitor.position}
                           </Badge>
@@ -239,12 +254,20 @@ export default function MetricsPage() {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Strength</div>
-                          <p className="text-sm text-emerald leading-snug">{competitor.strength}</p>
+                          <div className="text-xs text-muted-foreground mb-1">
+                            Strength
+                          </div>
+                          <p className="text-sm text-emerald leading-snug">
+                            {competitor.strength}
+                          </p>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Weakness</div>
-                          <p className="text-sm text-destructive leading-snug">{competitor.weakness}</p>
+                          <div className="text-xs text-muted-foreground mb-1">
+                            Weakness
+                          </div>
+                          <p className="text-sm text-destructive leading-snug">
+                            {competitor.weakness}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -252,7 +275,6 @@ export default function MetricsPage() {
                 </div>
               </div>
             )}
-
           </div>
         ) : (
           <div className="flex items-center justify-center min-h-[40vh]">
@@ -261,5 +283,5 @@ export default function MetricsPage() {
         )}
       </main>
     </div>
-  )
+  );
 }
