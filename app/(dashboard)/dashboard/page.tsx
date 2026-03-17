@@ -170,6 +170,7 @@ export default function DashboardPage() {
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showArrows, setShowArrows] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
@@ -183,6 +184,17 @@ export default function DashboardPage() {
   useEffect(() => {
     loadStartups();
   }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const checkOverflow = () => {
+      setShowArrows(el.scrollWidth > el.clientWidth);
+    };
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [startups]);
 
   const loadStartups = async () => {
     const supabase = createClient();
@@ -244,24 +256,24 @@ export default function DashboardPage() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-5 h-40" />
-                </Card>
-              ))}
+            <div className="flex gap-4">
+              <Card className="animate-pulse shrink-0 w-72">
+                <CardContent className="p-5 h-40" />
+              </Card>
             </div>
           ) : startups.length > 0 ? (
-            <div className="relative">
-              <button
-                onClick={scrollLeft}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 rounded-full bg-background border shadow-md flex items-center justify-center hover:bg-secondary transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
+            <div className="relative px-6">
+              {showArrows && (
+                <button
+                  onClick={scrollLeft}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border shadow-md flex items-center justify-center hover:bg-secondary transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
               <div
                 ref={scrollRef}
-                className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide scroll-smooth"
+                className="flex gap-4 overflow-x-auto scroll-smooth"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
                 {startups.map((startup) => (
@@ -274,12 +286,14 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={scrollRight}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 rounded-full bg-background border shadow-md flex items-center justify-center hover:bg-secondary transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              {showArrows && (
+                <button
+                  onClick={scrollRight}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-background border shadow-md flex items-center justify-center hover:bg-secondary transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
           ) : (
             <Card className="border-dashed">
