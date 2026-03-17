@@ -65,13 +65,14 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
 
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5",
-      max_tokens: 4000,
+      max_tokens: 5000,
       messages: [{ role: "user", content: prompt }],
     });
 
     const content = message.content[0];
     if (content.type !== "text") throw new Error("Unexpected response type");
 
+    console.log("AI Response:", content.text.substring(0, 500));
     const cleanJson = content.text.replace(/```json\n?|\n?```/g, "").trim();
     const aiResult = JSON.parse(cleanJson);
 
