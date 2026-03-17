@@ -23,49 +23,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const prompt = `You are a startup ecosystem analyst. Generate fresh, realistic startup news and data for a startup dashboard. Today's date context: ${
-      new Date().toISOString().split("T")[0]
-    }.
+    const prompt = `Generate startup ecosystem news as JSON. Return ONLY valid JSON, no markdown.
 
-Generate data for 6 categories. Each category needs exactly 3 items.
-
-Respond ONLY with a valid JSON object, no markdown, no extra text:
-{
-  "funding": [
-    {"title": "<news title>", "subtitle": "<detail>", "value": "<amount e.g. $500M>", "badge": "<optional: Hot|Breaking|New|null>", "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null}
-  ],
-  "trending": [
-    {"title": "<startup name>", "subtitle": "<description>", "value": "<metric e.g. 10M+ users>", "badge": null, "growth": <number>},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": <number>},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": <number>}
-  ],
-  "grants": [
-    {"title": "<program name>", "subtitle": "<detail>", "value": "<amount>", "badge": "<optional: Apply Now|Open|null>", "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null}
-  ],
-  "top": [
-    {"title": "<startup name>", "subtitle": "<description>", "value": "<metric>", "badge": null, "growth": <number>},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": <number>},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": <number>}
-  ],
-  "programs": [
-    {"title": "<program name>", "subtitle": "<detail>", "value": "<amount or benefit>", "badge": "<optional: Open|New|null>", "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null}
-  ],
-  "news": [
-    {"title": "<policy/incentive title>", "subtitle": "<detail>", "value": "<optional amount>", "badge": "<optional: Policy|New|null>", "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null},
-    {"title": "...", "subtitle": "...", "value": "...", "badge": null, "growth": null}
-  ]
-}`;
+Format:
+{"funding":[{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null}],"trending":[{"title":"...","subtitle":"...","value":"...","badge":null,"growth":150},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":200},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":100}],"grants":[{"title":"...","subtitle":"...","value":"...","badge":"Open","growth":null},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null}],"top":[{"title":"...","subtitle":"...","value":"...","badge":null,"growth":300},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":180},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":90}],"programs":[{"title":"...","subtitle":"...","value":"...","badge":"Open","growth":null},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null},{"title":"...","subtitle":"...","value":"...","badge":null,"growth":null}],"news":[{"title":"...","subtitle":"...","value":null,"badge":"Policy","growth":null},{"title":"...","subtitle":"...","value":null,"badge":null,"growth":null},{"title":"...","subtitle":"...","value":null,"badge":"New","growth":null}]}`;
 
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5",
-      max_tokens: 5000,
+      max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
     });
 
