@@ -242,14 +242,15 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : startups.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-2">
               {startups.map((startup) => (
-                <StartupCard
-                  key={startup.id}
-                  startup={startup}
-                  href={`/analysis/${startup.id}`}
-                  showMetrics
-                />
+                <div key={startup.id} className="shrink-0 w-72">
+                  <StartupCard
+                    startup={startup}
+                    href={`/analysis/${startup.id}`}
+                    showMetrics
+                  />
+                </div>
               ))}
             </div>
           ) : (
