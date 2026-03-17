@@ -171,6 +171,7 @@ export default function DashboardPage() {
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showArrows, setShowArrows] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
@@ -225,6 +226,10 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
+  const filteredStartups = startups.filter((s) =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen">
       <TopNav
@@ -232,6 +237,7 @@ export default function DashboardPage() {
           label: "Add Startup",
           onClick: () => setShowAddStartup(true),
         }}
+        onSearch={setSearchQuery}
       />
 
       <main className="p-4 md:p-6 lg:p-8">
@@ -261,7 +267,29 @@ export default function DashboardPage() {
                 <CardContent className="p-5 h-40" />
               </Card>
             </div>
-          ) : startups.length > 0 ? (
+          ) : startups.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="p-3 rounded-full bg-primary/10 mb-4">
+                  <Rocket className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-1">
+                  No startups yet
+                </h3>
+                <p className="text-sm text-muted-foreground text-center mb-4">
+                  Add your first startup to get AI-powered insights
+                </p>
+                <Button onClick={() => setShowAddStartup(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Startup
+                </Button>
+              </CardContent>
+            </Card>
+          ) : filteredStartups.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">
+              "{searchQuery}" için sonuç bulunamadı.
+            </p>
+          ) : (
             <div className="relative px-6">
               {showArrows && (
                 <button
@@ -276,7 +304,7 @@ export default function DashboardPage() {
                 className="flex gap-4 overflow-x-auto scroll-smooth"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
-                {startups.map((startup) => (
+                {filteredStartups.map((startup) => (
                   <div key={startup.id} className="shrink-0 w-72">
                     <StartupCard
                       startup={startup}
@@ -295,24 +323,6 @@ export default function DashboardPage() {
                 </button>
               )}
             </div>
-          ) : (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="p-3 rounded-full bg-primary/10 mb-4">
-                  <Rocket className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">
-                  No startups yet
-                </h3>
-                <p className="text-sm text-muted-foreground text-center mb-4">
-                  Add your first startup to get AI-powered insights
-                </p>
-                <Button onClick={() => setShowAddStartup(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Startup
-                </Button>
-              </CardContent>
-            </Card>
           )}
         </section>
 
