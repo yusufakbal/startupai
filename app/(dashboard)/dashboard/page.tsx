@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import {
   Plus,
   Rocket,
@@ -169,6 +170,15 @@ export default function DashboardPage() {
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    scrollRef.current?.scrollBy({ left: -300, behavior: "smooth" });
+  };
+
+  const scrollRight = () => {
+    scrollRef.current?.scrollBy({ left: 300, behavior: "smooth" });
+  };
 
   useEffect(() => {
     loadStartups();
@@ -242,16 +252,34 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : startups.length > 0 ? (
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {startups.map((startup) => (
-                <div key={startup.id} className="shrink-0 w-72">
-                  <StartupCard
-                    startup={startup}
-                    href={`/analysis/${startup.id}`}
-                    showMetrics
-                  />
-                </div>
-              ))}
+            <div className="relative">
+              <button
+                onClick={scrollLeft}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 rounded-full bg-background border shadow-md flex items-center justify-center hover:bg-secondary transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <div
+                ref={scrollRef}
+                className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide scroll-smooth"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {startups.map((startup) => (
+                  <div key={startup.id} className="shrink-0 w-72">
+                    <StartupCard
+                      startup={startup}
+                      href={`/analysis/${startup.id}`}
+                      showMetrics
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={scrollRight}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 rounded-full bg-background border shadow-md flex items-center justify-center hover:bg-secondary transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           ) : (
             <Card className="border-dashed">
