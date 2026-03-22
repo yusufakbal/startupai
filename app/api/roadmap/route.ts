@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Startup bilgilerini al
     const { data: startup } = await supabase
       .from("startups")
       .select("*")
@@ -49,7 +48,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Analiz bilgilerini al
     const { data: analysis } = await supabase
       .from("analyses")
       .select("*")
@@ -57,7 +55,6 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
-    // Mevcut roadmap var mı?
     const { data: existingRoadmap } = await supabase
       .from("roadmaps")
       .select("*")
@@ -66,7 +63,6 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (existingRoadmap && !force) {
-      // Mevcut roadmap'i fazlar ve tasklar ile döndür
       const { data: phases } = await supabase
         .from("roadmap_phases")
         .select("*")
@@ -88,12 +84,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Mevcut roadmap varsa sil (force=true)
     if (existingRoadmap && force) {
       await supabase.from("roadmaps").delete().eq("id", existingRoadmap.id);
     }
 
-    // Claude'a roadmap oluştur
     const prompt = `You are an expert startup growth advisor. Create a detailed 4-phase roadmap for this startup.
 
 Startup Information:
@@ -122,9 +116,11 @@ ${
 Create exactly 4 phases: "Validate Idea", "Acquire Users", "Product Growth", "Scale".
 Each phase must have at least 3 tasks.
 
+IMPORTANT: For tools, provide real platform URLs. Use this exact format for tools.
+
 Respond ONLY with a valid JSON object, no markdown, no extra text:
 {
-  "ai_recommendation": "<motivating 2-3 sentence strategic recommendation that energizes the founder>",
+  "ai_recommendation": "<motivating 2-3 sentence strategic recommendation>",
   "phases": [
     {
       "phase_number": 1,
@@ -138,7 +134,15 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
           "difficulty": "<Easy|Medium|Hard>",
           "order_index": 0,
           "steps": ["<step1>", "<step2>", "<step3>"],
-          "tools": [{"category": "<category>", "items": ["<tool1>", "<tool2>"]}],
+          "tools": [
+            {
+              "category": "<category e.g. Research|Survey|Email|Analytics|Design|Payment>",
+              "items": [
+                {"name": "<tool name>", "url": "<https://actual-tool-url.com>"},
+                {"name": "<tool name>", "url": "<https://actual-tool-url.com>"}
+              ]
+            }
+          ],
           "impact": {"userGrowth": <number 0-100>, "conversion": <number 0-100>}
         }
       ]
@@ -161,7 +165,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     const cleanJson = content.text.replace(/```json\n?|\n?```/g, "").trim();
     const aiResult = JSON.parse(cleanJson);
 
-    // Roadmap kaydet
     const { data: savedRoadmap } = await supabase
       .from("roadmaps")
       .insert({
@@ -177,7 +180,6 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     const allPhases = [];
     const allTasks = [];
 
-    // Fazları ve taskları kaydet
     for (const phase of aiResult.phases) {
       const { data: savedPhase } = await supabase
         .from("roadmap_phases")

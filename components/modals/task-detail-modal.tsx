@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+export interface ToolItem {
+  name: string;
+  url: string;
+}
+
 export interface TaskData {
   id: string;
   title: string;
@@ -26,7 +31,7 @@ export interface TaskData {
   priority: "low" | "medium" | "high";
   phase: number;
   steps?: string[];
-  tools?: { category: string; items: string[] }[];
+  tools?: { category: string; items: ToolItem[] | string[] }[];
   impact?: {
     userGrowth?: number;
     conversion?: number;
@@ -45,12 +50,6 @@ const difficultyColors = {
   Medium: "bg-amber/10 text-amber border-amber/20",
   Hard: "bg-destructive/10 text-destructive border-destructive/20",
 };
-
-function getToolUrl(toolName: string): string {
-  return `https://www.google.com/search?q=${encodeURIComponent(
-    toolName + " tool"
-  )}`;
-}
 
 export function TaskDetailModal({
   open,
@@ -130,19 +129,29 @@ export function TaskDetailModal({
                         {toolGroup.category}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {toolGroup.items.map((tool: string) => (
-                          <Badge
-                            key={tool}
-                            variant="secondary"
-                            className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
-                            onClick={() =>
-                              window.open(getToolUrl(tool), "_blank")
-                            }
-                          >
-                            {tool}
-                            <ExternalLink className="w-3 h-3 ml-1" />
-                          </Badge>
-                        ))}
+                        {toolGroup.items.map((tool) => {
+                          // Hem eski format (string) hem yeni format ({name, url}) destekle
+                          const toolName =
+                            typeof tool === "string" ? tool : tool.name;
+                          const toolUrl =
+                            typeof tool === "string"
+                              ? `https://www.google.com/search?q=${encodeURIComponent(
+                                  tool + " tool"
+                                )}`
+                              : tool.url;
+
+                          return (
+                            <Badge
+                              key={toolName}
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                              onClick={() => window.open(toolUrl, "_blank")}
+                            >
+                              {toolName}
+                              <ExternalLink className="w-3 h-3 ml-1" />
+                            </Badge>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
