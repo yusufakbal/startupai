@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("language")
+      .eq("id", user.id)
+      .single();
+
+    const language = profile?.language === "tr" ? "Turkish" : "English";
+
     const { data: startup, error: startupError } = await supabase
       .from("startups")
       .select("*")
@@ -63,7 +71,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const prompt = `You are an expert startup advisor. Analyze the following startup thoroughly.
+    const prompt = `You are an expert startup advisor.Respond ENTIRELY in ${language}. All text fields must be in ${language}. Analyze the following startup thoroughly.
 
 Startup Information:
 - Name: ${startup.name}

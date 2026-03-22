@@ -8,6 +8,7 @@ import {
   DollarSign,
   BarChart2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,9 @@ export function StartupCard({
   showScores = false,
   showProgress = false,
 }: StartupCardProps) {
+  const t = useTranslations("startups");
+  const tAnalysis = useTranslations("analysis");
+
   return (
     <Link href={href}>
       <Card className="group h-full hover:shadow-lg hover:border-primary/20 transition-all duration-200 cursor-pointer">
@@ -84,7 +88,7 @@ export function StartupCard({
               <div className="bg-secondary/50 rounded-lg p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                   <BarChart2 className="w-3.5 h-3.5" />
-                  Startup Score
+                  {tAnalysis("startupScore")}
                 </div>
                 <div className="text-lg font-bold text-indigo">
                   {startup.score}/10
@@ -94,7 +98,7 @@ export function StartupCard({
                 <div className="bg-secondary/50 rounded-lg p-3">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                     <TrendingUp className="w-3.5 h-3.5" />
-                    Market Score
+                    {tAnalysis("marketScore")}
                   </div>
                   <div className="text-lg font-bold text-emerald">
                     {startup.marketScore}/10
@@ -109,7 +113,7 @@ export function StartupCard({
               <div className="flex items-center gap-4">
                 {startup.competitionLevel && (
                   <span className="text-muted-foreground">
-                    Competition:{" "}
+                    {tAnalysis("competition")}:{" "}
                     <span
                       className={cn(
                         "font-medium",
@@ -140,7 +144,9 @@ export function StartupCard({
                   <div className="text-sm font-semibold">
                     {formatNumber(startup.users)}
                   </div>
-                  <div className="text-xs text-muted-foreground">Users</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("users")}
+                  </div>
                 </div>
               )}
               {startup.revenue !== undefined && (
@@ -149,7 +155,9 @@ export function StartupCard({
                   <div className="text-sm font-semibold">
                     ${formatNumber(startup.revenue)}
                   </div>
-                  <div className="text-xs text-muted-foreground">Revenue</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("revenue")}
+                  </div>
                 </div>
               )}
               {startup.growth !== undefined && (
@@ -168,7 +176,9 @@ export function StartupCard({
                     {startup.growth > 0 ? "+" : ""}
                     {startup.growth}%
                   </div>
-                  <div className="text-xs text-muted-foreground">Growth</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("growth")}
+                  </div>
                 </div>
               )}
             </div>
@@ -180,10 +190,10 @@ export function StartupCard({
               <div className="mt-4">
                 <div className="flex items-center justify-between text-sm mb-2">
                   <span className="text-muted-foreground">
-                    Roadmap Progress
+                    {t("roadmapProgress")}
                   </span>
                   <span className="font-medium">
-                    {startup.tasksCompleted}/{startup.totalTasks} tasks
+                    {startup.tasksCompleted}/{startup.totalTasks} {t("tasks")}
                   </span>
                 </div>
                 <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -191,7 +201,9 @@ export function StartupCard({
                     className="h-full bg-primary rounded-full transition-all"
                     style={{
                       width: `${
-                        (startup.tasksCompleted / startup.totalTasks) * 100
+                        startup.totalTasks > 0
+                          ? (startup.tasksCompleted / startup.totalTasks) * 100
+                          : 0
                       }%`,
                     }}
                   />

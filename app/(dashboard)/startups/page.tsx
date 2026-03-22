@@ -173,7 +173,7 @@ export default function StartupsPage() {
                   {startups.length}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Total Startups
+                  {t("totalStartups")}
                 </div>
               </CardContent>
             </Card>
@@ -182,7 +182,9 @@ export default function StartupsPage() {
                 <div className="text-2xl font-bold text-emerald">
                   {startups.filter((s) => s.stage === "Growth").length}
                 </div>
-                <div className="text-sm text-muted-foreground">In Growth</div>
+                <div className="text-sm text-muted-foreground">
+                  {t("inGrowth")}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -207,7 +209,7 @@ export default function StartupsPage() {
                   {startups.filter((s) => s.stage === "Idea").length}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  In Idea Stage
+                  {t("inIdeaStage")}
                 </div>
               </CardContent>
             </Card>

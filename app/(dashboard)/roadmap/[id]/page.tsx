@@ -73,6 +73,8 @@ export default function RoadmapDetailPage({
   const { id } = use(params);
   const t = useTranslations("roadmap");
   const tCommon = useTranslations("common");
+  const tTask = useTranslations("taskDetail");
+  const tStartups = useTranslations("startups");
   const [startup, setStartup] = useState<any>(null);
   const [roadmap, setRoadmap] = useState<any>(null);
   const [phases, setPhases] = useState<any[]>([]);
@@ -270,6 +272,7 @@ export default function RoadmapDetailPage({
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
           <p className="text-muted-foreground text-lg">{t("generating")}</p>
+          <p className="text-sm text-muted-foreground">{t("generatingWait")}</p>
         </div>
       </div>
     );
@@ -334,7 +337,9 @@ export default function RoadmapDetailPage({
                 <div className="text-lg font-bold">
                   {startup?.users_count?.toLocaleString() || 0}
                 </div>
-                <div className="text-xs text-muted-foreground">Users</div>
+                <div className="text-xs text-muted-foreground">
+                  {tTask("users")}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -347,7 +352,9 @@ export default function RoadmapDetailPage({
                 <div className="text-lg font-bold">
                   ${((startup?.revenue || 0) / 1000).toFixed(1)}K
                 </div>
-                <div className="text-xs text-muted-foreground">Revenue</div>
+                <div className="text-xs text-muted-foreground">
+                  {tStartups("revenue")}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -360,7 +367,9 @@ export default function RoadmapDetailPage({
                 <div className="text-lg font-bold text-emerald">
                   +{startup?.growth_rate || 0}%
                 </div>
-                <div className="text-xs text-muted-foreground">Growth</div>
+                <div className="text-xs text-muted-foreground">
+                  {tStartups("growth")}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -403,7 +412,7 @@ export default function RoadmapDetailPage({
                         >
                           {phase.phase_number}
                         </span>
-                        Phase {phase.phase_number} - {phase.name}
+                        {t("phase")} {phase.phase_number} - {phase.name}
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         {phase.duration && (
@@ -524,7 +533,7 @@ export default function RoadmapDetailPage({
                     <div key={phase.id}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-muted-foreground">
-                          Phase {phase.phase_number}
+                          {t("phase")} {phase.phase_number}
                         </span>
                         <span className="font-medium">
                           {completed}/{phaseTasks.length}
@@ -615,7 +624,7 @@ export default function RoadmapDetailPage({
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Users</Label>
+              <Label>{tTask("users")}</Label>
               <Input
                 type="number"
                 value={metrics.users_count}
@@ -628,7 +637,7 @@ export default function RoadmapDetailPage({
               />
             </div>
             <div className="space-y-2">
-              <Label>Revenue ($)</Label>
+              <Label>{tTask("revenue")}</Label>
               <Input
                 type="number"
                 value={metrics.revenue}
@@ -641,7 +650,7 @@ export default function RoadmapDetailPage({
               />
             </div>
             <div className="space-y-2">
-              <Label>Growth Rate (%)</Label>
+              <Label>{tTask("growthRate")}</Label>
               <Input
                 type="number"
                 value={metrics.growth_rate}

@@ -55,7 +55,8 @@
     "position": "Position",
     "competitionScore": "Competition Score",
     "summary": "Summary",
-    "fullInsight": "Full AI Insight"
+    "fullInsight": "Full AI Insight",
+    "generatingWait": "This may take 10-20 seconds"
   },
   "roadmap": {
     "title": "Growth Roadmaps",
@@ -85,7 +86,8 @@
     "usersLabel": "Users",
     "revenueLabel": "Revenue",
     "growthLabel": "Growth",
-    "phase": "Phase"
+    "phase": "Phase",
+    "generatingWait": "This may take 15-30 seconds"
   },
   "metrics": {
     "title": "Metrics",
@@ -113,7 +115,12 @@
     "revenue": "Revenue",
     "growth": "Growth",
     "allStages": "All Stages",
-    "filterBy": "Filter by stage"
+    "filterBy": "Filter by stage",
+    "roadmapProgress": "Roadmap Progress",
+    "tasks": "tasks",
+    "totalStartups": "Total Startups",
+    "inGrowth": "In Growth",
+    "inIdeaStage": "In Idea Stage"
   },
   "settings": {
     "title": "Settings",
@@ -204,5 +211,20 @@
     "monthlyRevenue": "Monthly Revenue ($)",
     "createStartup": "Create Startup",
     "sessionNotFound": "Session not found, please sign in again"
+  },
+  "taskDetail": {
+    "taskDescription": "Task Description",
+    "howToExecute": "How to Execute",
+    "recommendedTools": "Recommended Tools",
+    "estimatedImpact": "Estimated Impact",
+    "userGrowth": "Expected User Growth",
+    "conversion": "Conversion Improvement",
+    "difficultyAssessment": "Difficulty Assessment",
+    "easyDesc": "Quick win - can be completed in a few hours",
+    "mediumDesc": "Moderate effort - 1-3 days of focused work",
+    "hardDesc": "Significant investment - 1+ weeks required",
+    "users": "Users",
+    "revenue": "Revenue ($)",
+    "growthRate": "Growth Rate (%)"
   }
 }

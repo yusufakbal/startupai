@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("language")
+      .eq("id", user.id)
+      .single();
+
+    const language = profile?.language === "tr" ? "Turkish" : "English";
+
     const { data: startup } = await supabase
       .from("startups")
       .select("*")
@@ -88,7 +96,7 @@ export async function POST(req: NextRequest) {
       await supabase.from("roadmaps").delete().eq("id", existingRoadmap.id);
     }
 
-    const prompt = `You are an expert startup growth advisor. Create a detailed 4-phase roadmap for this startup.
+    const prompt = `You are an expert startup growth advisor. Respond ENTIRELY in ${language}. All text fields must be in ${language}. Create a detailed 4-phase roadmap for this startup.
 
 Startup Information:
 - Name: ${startup.name}

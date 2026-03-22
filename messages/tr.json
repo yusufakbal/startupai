@@ -55,7 +55,8 @@
     "position": "Konum",
     "competitionScore": "Rekabet Skoru",
     "summary": "Özet",
-    "fullInsight": "Tam AI Analizi"
+    "fullInsight": "Tam AI Analizi",
+    "generatingWait": "Bu işlem 10-20 saniye sürebilir"
   },
   "roadmap": {
     "title": "Büyüme Yol Haritaları",
@@ -85,7 +86,8 @@
     "usersLabel": "Kullanıcılar",
     "revenueLabel": "Gelir",
     "growthLabel": "Büyüme",
-    "phase": "Faz"
+    "phase": "Faz",
+    "generatingWait": "Bu işlem 15-30 saniye sürebilir"
   },
   "metrics": {
     "title": "Metrikler",
@@ -113,7 +115,12 @@
     "revenue": "Gelir",
     "growth": "Büyüme",
     "allStages": "Tüm Aşamalar",
-    "filterBy": "Aşamaya göre filtrele"
+    "filterBy": "Aşamaya göre filtrele",
+    "roadmapProgress": "Yol Haritası İlerlemesi",
+    "tasks": "görev",
+    "totalStartups": "Toplam İş",
+    "inGrowth": "Büyüme Aşamasında",
+    "inIdeaStage": "Fikir Aşamasında"
   },
   "settings": {
     "title": "Ayarlar",
@@ -204,5 +211,20 @@
     "monthlyRevenue": "Aylık Gelir ($)",
     "createStartup": "İşi Oluştur",
     "sessionNotFound": "Oturum bulunamadı, lütfen tekrar giriş yapın"
+  },
+  "taskDetail": {
+    "taskDescription": "Görev Açıklaması",
+    "howToExecute": "Nasıl Yapılır",
+    "recommendedTools": "Önerilen Araçlar",
+    "estimatedImpact": "Tahmini Etki",
+    "userGrowth": "Beklenen Kullanıcı Artışı",
+    "conversion": "Dönüşüm İyileştirmesi",
+    "difficultyAssessment": "Zorluk Değerlendirmesi",
+    "easyDesc": "Hızlı kazanım - birkaç saatte tamamlanabilir",
+    "mediumDesc": "Orta çaba - 1-3 günlük odaklı çalışma",
+    "hardDesc": "Önemli yatırım - 1+ hafta gerektirir",
+    "users": "Kullanıcı Sayısı",
+    "revenue": "Gelir ($)",
+    "growthRate": "Büyüme Oranı (%)"
   }
 }

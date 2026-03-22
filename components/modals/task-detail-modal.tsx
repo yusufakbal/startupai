@@ -16,6 +16,7 @@ import {
   Gauge,
   ExternalLink,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export interface ToolItem {
@@ -56,6 +57,8 @@ export function TaskDetailModal({
   onOpenChange,
   task,
 }: TaskDetailModalProps) {
+  const t = useTranslations("taskDetail");
+
   if (!task) return null;
 
   return (
@@ -74,11 +77,10 @@ export function TaskDetailModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Task Description */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">
-                Task Description
+                {t("taskDescription")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -88,13 +90,12 @@ export function TaskDetailModal({
             </CardContent>
           </Card>
 
-          {/* How to Execute */}
           {task.steps && task.steps.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <ListOrdered className="w-4 h-4 text-primary" />
-                  How to Execute
+                  {t("howToExecute")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -112,13 +113,12 @@ export function TaskDetailModal({
             </Card>
           )}
 
-          {/* Recommended Tools */}
           {task.tools && task.tools.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Wrench className="w-4 h-4 text-indigo" />
-                  Recommended Tools
+                  {t("recommendedTools")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -130,7 +130,6 @@ export function TaskDetailModal({
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {toolGroup.items.map((tool) => {
-                          // Hem eski format (string) hem yeni format ({name, url}) destekle
                           const toolName =
                             typeof tool === "string" ? tool : tool.name;
                           const toolUrl =
@@ -160,13 +159,12 @@ export function TaskDetailModal({
             </Card>
           )}
 
-          {/* Estimated Impact */}
           {task.impact && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <BarChart2 className="w-4 h-4 text-emerald" />
-                  Estimated Impact
+                  {t("estimatedImpact")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -174,7 +172,7 @@ export function TaskDetailModal({
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-muted-foreground">
-                        Expected User Growth
+                        {t("userGrowth")}
                       </span>
                       <span className="font-medium text-emerald">
                         +{task.impact.userGrowth}%
@@ -187,7 +185,7 @@ export function TaskDetailModal({
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-muted-foreground">
-                        Conversion Improvement
+                        {t("conversion")}
                       </span>
                       <span className="font-medium text-emerald">
                         +{task.impact.conversion}%
@@ -200,12 +198,11 @@ export function TaskDetailModal({
             </Card>
           )}
 
-          {/* Difficulty Level */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Gauge className="w-4 h-4 text-amber" />
-                Difficulty Assessment
+                {t("difficultyAssessment")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -233,12 +230,9 @@ export function TaskDetailModal({
                   ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {task.difficulty === "Easy" &&
-                    "Quick win - can be completed in a few hours"}
-                  {task.difficulty === "Medium" &&
-                    "Moderate effort - 1-3 days of focused work"}
-                  {task.difficulty === "Hard" &&
-                    "Significant investment - 1+ weeks required"}
+                  {task.difficulty === "Easy" && t("easyDesc")}
+                  {task.difficulty === "Medium" && t("mediumDesc")}
+                  {task.difficulty === "Hard" && t("hardDesc")}
                 </span>
               </div>
             </CardContent>
