@@ -210,33 +210,45 @@ export function CompetitionModal({
                   Top Competitors
                 </CardTitle>
               </CardHeader>
-              <CardContent className="overflow-x-auto">
-                <Table className="min-w-full">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Competitor</TableHead>
-                      <TableHead>Strength</TableHead>
-                      <TableHead>Weakness</TableHead>
-                      <TableHead>Position</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {analysis.competitors.map((c: any, i: number) => (
-                      <TableRow key={i}>
-                        <TableCell className="font-medium">{c.name}</TableCell>
-                        <TableCell className="text-emerald text-sm">
-                          {c.strength}
-                        </TableCell>
-                        <TableCell className="text-destructive text-sm">
-                          {c.weakness}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{c.position}</Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="text-sm" style={{ minWidth: "600px" }}>
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
+                          Competitor
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
+                          Strength
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
+                          Weakness
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
+                          Position
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analysis.competitors.map((c: any, i: number) => (
+                        <tr key={i} className="border-b last:border-0">
+                          <td className="py-3 px-4 font-medium whitespace-nowrap">
+                            {c.name}
+                          </td>
+                          <td className="py-3 px-4 text-emerald max-w-[200px]">
+                            {c.strength}
+                          </td>
+                          <td className="py-3 px-4 text-destructive max-w-[200px]">
+                            {c.weakness}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <Badge variant="secondary">{c.position}</Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
           )}
