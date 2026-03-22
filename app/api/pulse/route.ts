@@ -1,20 +1,29 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// Service role client — RLS bypass için
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+async function getSupabase() {
+  const cookieStore = await cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+      },
+    }
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Güvenlik — sadece secret key ile çalışsın
     const { secret } = await req.json();
     if (secret !== process.env.PULSE_UPDATE_SECRET) {
       return NextResponse.json(
@@ -22,6 +31,8 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    const supabase = await getSupabase();
 
     const prompt = `Generate startup ecosystem news as JSON. Return ONLY valid JSON, no markdown.
 
@@ -37,17 +48,14 @@ Format:
     const content = message.content[0];
     if (content.type !== "text") throw new Error("Unexpected response type");
 
-    console.log("AI Response:", content.text.substring(0, 500));
     const cleanJson = content.text.replace(/```json\n?|\n?```/g, "").trim();
     const aiResult = JSON.parse(cleanJson);
 
-    // Mevcut tüm pulse item'ları sil
     await supabase
       .from("pulse_items")
       .delete()
       .neq("id", "00000000-0000-0000-0000-000000000000");
 
-    // Yeni item'ları ekle
     const itemsToInsert: {
       type: string;
       title: string;
@@ -58,8 +66,8 @@ Format:
       order_index: number;
       is_active: boolean;
     }[] = [];
-    const types = ["funding", "trending", "grants", "top", "programs", "news"];
 
+    const types = ["funding", "trending", "grants", "top", "programs", "news"];
     for (const type of types) {
       const items = aiResult[type] || [];
       items.forEach((item: any, index: number) => {
@@ -78,7 +86,6 @@ Format:
 
     await supabase.from("pulse_items").insert(itemsToInsert);
 
-    // Meta güncelle
     await supabase.from("pulse_meta").upsert({
       id: "00000000-0000-0000-0000-000000000001",
       last_updated_at: new Date().toISOString(),
@@ -101,6 +108,8 @@ Format:
 
 export async function GET() {
   try {
+    const supabase = await getSupabase();
+
     const { data: items } = await supabase
       .from("pulse_items")
       .select("*")
