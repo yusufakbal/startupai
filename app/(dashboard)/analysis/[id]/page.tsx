@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { use } from "react";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   BarChart2,
@@ -35,6 +36,8 @@ export default function AnalysisDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("analysis");
+  const tCommon = useTranslations("common");
   const [startup, setStartup] = useState<any>(null);
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -59,7 +62,7 @@ export default function AnalysisDetailPage({
       .single();
 
     if (!startupData) {
-      setError("Startup bulunamadı.");
+      setError(t("notFound"));
       setLoading(false);
       return;
     }
@@ -96,12 +99,12 @@ export default function AnalysisDetailPage({
       const data = await res.json();
 
       if (!data.success) {
-        setError("Analiz oluşturulamadı: " + data.error);
+        setError(data.error);
       } else {
         setAnalysis(data.analysis);
       }
     } catch (err) {
-      setError("Bir hata oluştu, lütfen tekrar deneyin.");
+      setError(tCommon("error"));
     } finally {
       setGenerating(false);
     }
@@ -119,7 +122,7 @@ export default function AnalysisDetailPage({
         <TopNav />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-muted-foreground text-lg">Yükleniyor...</p>
+          <p className="text-muted-foreground text-lg">{t("loading")}</p>
         </div>
       </div>
     );
@@ -131,12 +134,7 @@ export default function AnalysisDetailPage({
         <TopNav />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-muted-foreground text-lg">
-            AI analiz oluşturuyor...
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Bu işlem 10-20 saniye sürebilir
-          </p>
+          <p className="text-muted-foreground text-lg">{t("generating")}</p>
         </div>
       </div>
     );
@@ -148,7 +146,7 @@ export default function AnalysisDetailPage({
         <TopNav />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <p className="text-destructive">{error}</p>
-          <Button onClick={generateAnalysis}>Tekrar Dene</Button>
+          <Button onClick={generateAnalysis}>{tCommon("retry")}</Button>
         </div>
       </div>
     );
@@ -159,14 +157,13 @@ export default function AnalysisDetailPage({
       <TopNav />
 
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="mb-6">
           <Link
             href="/analysis"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Analysis
+            {t("backToAnalysis")}
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -192,12 +189,12 @@ export default function AnalysisDetailPage({
                 disabled={generating}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Yeniden Analiz Et
+                {t("reanalyze")}
               </Button>
               <Link href={`/roadmap/${id}`}>
                 <Button>
                   <Map className="w-4 h-4 mr-2" />
-                  Roadmap
+                  {t("roadmap")}
                 </Button>
               </Link>
             </div>
@@ -211,7 +208,7 @@ export default function AnalysisDetailPage({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground mb-1">
-                    Startup Score
+                    {t("startupScore")}
                   </p>
                   <p className="text-2xl font-bold tracking-tight">
                     {analysis?.score}/10
@@ -224,36 +221,36 @@ export default function AnalysisDetailPage({
             </CardContent>
           </Card>
           <MetricCard
-            title="Market Score"
+            title={t("marketScore")}
             value={`${analysis?.market_score}/10`}
             icon={TrendingUp}
             variant="accent"
           />
           <MetricCard
-            title="Competition"
+            title={t("competition")}
             value={`${analysis?.competition_score}/10`}
             icon={AlertTriangle}
             variant="warning"
           />
           <MetricCard
-            title="Growth Potential"
+            title={t("growthPotential")}
             value={`${analysis?.growth_potential}%`}
             icon={Target}
             variant="success"
           />
         </div>
 
-        {/* AI Summary — tıklanabilir */}
+        {/* AI Summary */}
         <div className="mb-8">
           <InsightCard
-            title="AI Strategic Insight"
+            title={t("aiInsight")}
             content={analysis?.summary || ""}
             type="ai"
             onClick={() => setShowAIInsightModal(true)}
           />
         </div>
 
-        {/* Market & Competition — tıklanabilir */}
+        {/* Market & Competition */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card
             className="cursor-pointer hover:shadow-md hover:border-primary/20 transition-all"
@@ -262,7 +259,7 @@ export default function AnalysisDetailPage({
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-emerald" />
-                Market Analysis
+                {t("marketAnalysis")}
               </CardTitle>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </CardHeader>
@@ -306,7 +303,7 @@ export default function AnalysisDetailPage({
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber" />
-                Competition Analysis
+                {t("competitionAnalysis")}
               </CardTitle>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </CardHeader>
@@ -349,7 +346,7 @@ export default function AnalysisDetailPage({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-emerald">
-                💪 Strengths
+                💪 {t("strengths")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -369,7 +366,7 @@ export default function AnalysisDetailPage({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-amber">
-                ⚠️ Weaknesses
+                ⚠️ {t("weaknesses")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -389,7 +386,7 @@ export default function AnalysisDetailPage({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-indigo">
-                🚀 Opportunities
+                🚀 {t("opportunities")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -413,7 +410,7 @@ export default function AnalysisDetailPage({
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Growth Recommendations
+              {t("recommendations")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -431,7 +428,6 @@ export default function AnalysisDetailPage({
         </Card>
       </main>
 
-      {/* Modals */}
       <MarketAnalysisModal
         open={showMarketModal}
         onOpenChange={setShowMarketModal}

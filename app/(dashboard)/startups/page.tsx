@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Rocket, Filter, Grid, List } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { TopNav } from "@/components/layout/top-nav";
 import { StartupCard, type StartupData } from "@/components/cards/startup-card";
 import { AddStartupModal } from "@/components/modals/add-startup-modal";
@@ -18,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 
 export default function StartupsPage() {
+  const t = useTranslations("startups");
+  const tDashboard = useTranslations("dashboard");
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -42,16 +45,17 @@ export default function StartupsPage() {
       .order("created_at", { ascending: false });
 
     if (data) {
-      const mapped: StartupData[] = data.map((s) => ({
-        id: s.id,
-        name: s.name,
-        description: s.description,
-        stage: s.stage as StartupData["stage"],
-        users: s.users_count,
-        revenue: s.revenue,
-        growth: s.growth_rate,
-      }));
-      setStartups(mapped);
+      setStartups(
+        data.map((s) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          stage: s.stage as StartupData["stage"],
+          users: s.users_count,
+          revenue: s.revenue,
+          growth: s.growth_rate,
+        }))
+      );
     }
     setLoading(false);
   };
@@ -65,29 +69,26 @@ export default function StartupsPage() {
     <div className="min-h-screen">
       <TopNav
         primaryAction={{
-          label: "Add Startup",
+          label: t("addStartup"),
           onClick: () => setShowAddStartup(true),
         }}
       />
 
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">My Startups</h1>
-            <p className="text-muted-foreground">
-              Manage all your startup ventures
-            </p>
+            <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
 
           <div className="flex items-center gap-3">
             <Select value={stageFilter} onValueChange={setStageFilter}>
               <SelectTrigger className="w-[140px]">
                 <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Filter" />
+                <SelectValue placeholder={t("filterBy")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
+                <SelectItem value="all">{t("allStages")}</SelectItem>
                 <SelectItem value="Idea">Idea</SelectItem>
                 <SelectItem value="Validation">Validation</SelectItem>
                 <SelectItem value="Traction">Traction</SelectItem>
@@ -116,7 +117,6 @@ export default function StartupsPage() {
           </div>
         </div>
 
-        {/* Startups Grid/List */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1].map((i) => (
@@ -150,22 +150,21 @@ export default function StartupsPage() {
                 <Rocket className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-1">
-                No startups found
+                {t("noStartupsYet")}
               </h3>
               <p className="text-sm text-muted-foreground text-center mb-4">
                 {stageFilter !== "all"
                   ? `No startups in the ${stageFilter} stage`
-                  : "Get started by adding your first startup"}
+                  : t("addFirstStartup")}
               </p>
               <Button onClick={() => setShowAddStartup(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Startup
+                {t("addStartup")}
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Quick Stats */}
         {startups.length > 0 && (
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
@@ -198,7 +197,7 @@ export default function StartupsPage() {
                   K
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Total Revenue
+                  {t("revenue")}
                 </div>
               </CardContent>
             </Card>

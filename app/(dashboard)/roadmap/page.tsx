@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Map } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { TopNav } from "@/components/layout/top-nav";
 import { StartupCard, type StartupData } from "@/components/cards/startup-card";
 import { AddStartupModal } from "@/components/modals/add-startup-modal";
@@ -10,6 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase";
 
 export default function RoadmapPage() {
+  const t = useTranslations("roadmap");
+  const tDashboard = useTranslations("dashboard");
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,6 @@ export default function RoadmapPage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Startup'ları çek
     const { data: startupsData } = await supabase
       .from("startups")
       .select("*")
@@ -37,7 +39,6 @@ export default function RoadmapPage() {
       return;
     }
 
-    // Her startup için roadmap task sayılarını çek
     const mapped: StartupData[] = await Promise.all(
       startupsData.map(async (s) => {
         const { data: roadmap } = await supabase
@@ -82,23 +83,17 @@ export default function RoadmapPage() {
     <div className="min-h-screen">
       <TopNav
         primaryAction={{
-          label: "Start AI Roadmap",
+          label: t("title"),
           onClick: () => setShowAddStartup(true),
         }}
       />
 
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
-            Growth Roadmaps
-          </h1>
-          <p className="text-muted-foreground">
-            Select a startup to view and manage its roadmap
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("selectStartup")}</p>
         </div>
 
-        {/* Startups Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1].map((i) => (
@@ -126,14 +121,14 @@ export default function RoadmapPage() {
                 <Map className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-1">
-                No roadmaps yet
+                {t("title")}
               </h3>
               <p className="text-sm text-muted-foreground text-center mb-4">
-                Add a startup and generate an AI-powered growth roadmap
+                {t("selectStartup")}
               </p>
               <Button onClick={() => setShowAddStartup(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Start AI Roadmap
+                {tDashboard("addStartup")}
               </Button>
             </CardContent>
           </Card>

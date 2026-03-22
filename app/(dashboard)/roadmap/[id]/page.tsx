@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { use } from "react";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Users,
@@ -70,6 +71,8 @@ export default function RoadmapDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("roadmap");
+  const tCommon = useTranslations("common");
   const [startup, setStartup] = useState<any>(null);
   const [roadmap, setRoadmap] = useState<any>(null);
   const [phases, setPhases] = useState<any[]>([]);
@@ -101,9 +104,8 @@ export default function RoadmapDetailPage({
       .select("*")
       .eq("id", id)
       .single();
-
     if (!startupData) {
-      setError("Startup bulunamadı.");
+      setError(tCommon("error"));
       setLoading(false);
       return;
     }
@@ -123,19 +125,16 @@ export default function RoadmapDetailPage({
 
     if (roadmapData) {
       setRoadmap(roadmapData);
-
       const { data: phasesData } = await supabase
         .from("roadmap_phases")
         .select("*")
         .eq("roadmap_id", roadmapData.id)
         .order("phase_number");
-
       const { data: tasksData } = await supabase
         .from("roadmap_tasks")
         .select("*")
         .eq("roadmap_id", roadmapData.id)
         .order("order_index");
-
       setPhases(phasesData || []);
       setTasks(tasksData || []);
       setLoading(false);
@@ -148,25 +147,22 @@ export default function RoadmapDetailPage({
   const generateRoadmap = async (force: boolean) => {
     setGenerating(true);
     setError("");
-
     try {
       const res = await fetch("/api/roadmap", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ startup_id: id, force }),
       });
-
       const data = await res.json();
-
       if (!data.success) {
-        setError("Roadmap oluşturulamadı: " + data.error);
+        setError(data.error);
       } else {
         setRoadmap(data.roadmap);
         setPhases(data.phases || []);
         setTasks(data.tasks || []);
       }
     } catch (err) {
-      setError("Bir hata oluştu, lütfen tekrar deneyin.");
+      setError(tCommon("error"));
     } finally {
       setGenerating(false);
     }
@@ -175,25 +171,20 @@ export default function RoadmapDetailPage({
   const handleTaskCheck = async (taskId: string, currentStatus: string) => {
     const newStatus = currentStatus === "done" ? "todo" : "done";
     const supabase = createClient();
-
     await supabase
       .from("roadmap_tasks")
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq("id", taskId);
-
     const updatedTasks = tasks.map((t) =>
       t.id === taskId ? { ...t, status: newStatus } : t
     );
     setTasks(updatedTasks);
-
-    // Phase status'unu güncelle
     await updatePhaseStatuses(updatedTasks);
   };
 
   const updatePhaseStatuses = async (updatedTasks: any[]) => {
     const supabase = createClient();
     const updatedPhases = [...phases];
-
     for (let i = 0; i < updatedPhases.length; i++) {
       const phase = updatedPhases[i];
       const phaseTasks = updatedTasks.filter((t) => t.phase_id === phase.id);
@@ -201,9 +192,7 @@ export default function RoadmapDetailPage({
         (t) => t.status === "done"
       ).length;
       const prevPhase = i > 0 ? updatedPhases[i - 1] : null;
-
       let newStatus = phase.status;
-
       if (phaseTasks.length > 0 && completedCount === phaseTasks.length) {
         newStatus = "completed";
       } else if (
@@ -215,7 +204,6 @@ export default function RoadmapDetailPage({
       } else {
         newStatus = "upcoming";
       }
-
       if (newStatus !== phase.status) {
         await supabase
           .from("roadmap_phases")
@@ -224,12 +212,11 @@ export default function RoadmapDetailPage({
         updatedPhases[i] = { ...phase, status: newStatus };
       }
     }
-
     setPhases(updatedPhases);
   };
 
   const handleTaskClick = (task: any) => {
-    const taskData: TaskData = {
+    setSelectedTask({
       id: task.id,
       title: task.title,
       description: task.description,
@@ -240,15 +227,13 @@ export default function RoadmapDetailPage({
       tools: task.tools,
       impact: task.impact,
       difficulty: task.difficulty,
-    };
-    setSelectedTask(taskData);
+    });
     setShowTaskModal(true);
   };
 
   const handleUpdateMetrics = async () => {
     setMetricsLoading(true);
     const supabase = createClient();
-
     await supabase
       .from("startups")
       .update({
@@ -258,72 +243,62 @@ export default function RoadmapDetailPage({
         updated_at: new Date().toISOString(),
       })
       .eq("id", id);
-
     setStartup({ ...startup, ...metrics });
     setMetricsLoading(false);
     setShowMetricsModal(false);
   };
 
-  const allTasks = tasks;
-  const completedTasks = allTasks.filter((t) => t.status === "done").length;
-  const totalTasks = allTasks.length;
-  const nextUpTasks = allTasks.filter((t) => t.status !== "done").slice(0, 3);
+  const completedTasks = tasks.filter((t) => t.status === "done").length;
+  const totalTasks = tasks.length;
+  const nextUpTasks = tasks.filter((t) => t.status !== "done").slice(0, 3);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen">
         <TopNav />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-muted-foreground text-lg">Yükleniyor...</p>
+          <p className="text-muted-foreground text-lg">{t("loading")}</p>
         </div>
       </div>
     );
-  }
 
-  if (generating) {
+  if (generating)
     return (
       <div className="min-h-screen">
         <TopNav />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-muted-foreground text-lg">
-            AI roadmap oluşturuyor...
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Bu işlem 15-30 saniye sürebilir
-          </p>
+          <p className="text-muted-foreground text-lg">{t("generating")}</p>
         </div>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="min-h-screen">
         <TopNav />
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <AlertTriangle className="w-10 h-10 text-destructive" />
           <p className="text-destructive">{error}</p>
-          <Button onClick={() => generateRoadmap(false)}>Tekrar Dene</Button>
+          <Button onClick={() => generateRoadmap(false)}>
+            {tCommon("retry")}
+          </Button>
         </div>
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen">
       <TopNav />
-
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="mb-6">
           <Link
             href="/roadmap"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Roadmaps
+            {t("backToRoadmaps")}
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h1 className="text-2xl font-bold text-foreground">
@@ -336,20 +311,19 @@ export default function RoadmapDetailPage({
                 onClick={() => setShowMetricsModal(true)}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Update Metrics
+                {t("updateMetrics")}
               </Button>
               <Button
                 size="sm"
                 onClick={() => setShowUpdateRoadmapDialog(true)}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Update Roadmap
+                {t("updateRoadmap")}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Startup Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
@@ -399,19 +373,19 @@ export default function RoadmapDetailPage({
                 <div className="text-lg font-bold">
                   {completedTasks}/{totalTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">Tasks Done</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasksDone")}
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Roadmap */}
           <div className="lg:col-span-2 space-y-6">
             <h2 className="text-lg font-semibold text-foreground">
-              Growth Roadmap
+              {t("title")}
             </h2>
-
             {phases.map((phase) => {
               const phaseTasks = tasks.filter((t) => t.phase_id === phase.id);
               return (
@@ -448,10 +422,10 @@ export default function RoadmapDetailPage({
                           )}
                         >
                           {phase.status === "in_progress"
-                            ? "In Progress"
+                            ? t("inProgress")
                             : phase.status === "completed"
-                            ? "Completed"
-                            : "Upcoming"}
+                            ? t("completed")
+                            : t("upcoming")}
                         </Badge>
                       </div>
                     </div>
@@ -520,22 +494,18 @@ export default function RoadmapDetailPage({
             })}
           </div>
 
-          {/* Right Panel */}
           <div className="space-y-6">
-            {/* AI Recommendation */}
             {roadmap?.ai_recommendation && (
               <InsightCard
-                title="AI Recommendation"
+                title={t("aiRecommendation")}
                 content={roadmap.ai_recommendation}
                 type="ai"
               />
             )}
-
-            {/* Progress Overview */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">
-                  Progress Overview
+                  {t("progressOverview")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -575,11 +545,12 @@ export default function RoadmapDetailPage({
               </CardContent>
             </Card>
 
-            {/* Next Up */}
             {nextUpTasks.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Next Up</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {t("nextUp")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
@@ -606,49 +577,45 @@ export default function RoadmapDetailPage({
         </div>
       </main>
 
-      {/* Task Detail Modal */}
       <TaskDetailModal
         open={showTaskModal}
         onOpenChange={setShowTaskModal}
         task={selectedTask}
       />
 
-      {/* Update Roadmap Confirm Dialog */}
       <AlertDialog
         open={showUpdateRoadmapDialog}
         onOpenChange={setShowUpdateRoadmapDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Roadmap'i Güncelle</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Task ilerleme geçmişiniz sıfırlanacak ve yeni bir roadmap
-              oluşturulacak. Devam etmek istiyor musunuz?
+              {t("confirmUpdate")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setShowUpdateRoadmapDialog(false);
                 generateRoadmap(true);
               }}
             >
-              Evet, Güncelle
+              {t("confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Update Metrics Modal */}
       <Dialog open={showMetricsModal} onOpenChange={setShowMetricsModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Metrikleri Güncelle</DialogTitle>
+            <DialogTitle>{t("updateMetrics")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Kullanıcı Sayısı</Label>
+              <Label>Users</Label>
               <Input
                 type="number"
                 value={metrics.users_count}
@@ -661,7 +628,7 @@ export default function RoadmapDetailPage({
               />
             </div>
             <div className="space-y-2">
-              <Label>Aylık Gelir ($)</Label>
+              <Label>Revenue ($)</Label>
               <Input
                 type="number"
                 value={metrics.revenue}
@@ -674,7 +641,7 @@ export default function RoadmapDetailPage({
               />
             </div>
             <div className="space-y-2">
-              <Label>Büyüme Oranı (%)</Label>
+              <Label>Growth Rate (%)</Label>
               <Input
                 type="number"
                 value={metrics.growth_rate}
@@ -692,10 +659,10 @@ export default function RoadmapDetailPage({
               variant="outline"
               onClick={() => setShowMetricsModal(false)}
             >
-              İptal
+              {tCommon("cancel")}
             </Button>
             <Button onClick={handleUpdateMetrics} disabled={metricsLoading}>
-              {metricsLoading ? "Kaydediliyor..." : "Kaydet"}
+              {metricsLoading ? tCommon("saving") : tCommon("save")}
             </Button>
           </div>
         </DialogContent>

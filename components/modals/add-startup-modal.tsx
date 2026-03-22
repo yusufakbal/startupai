@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Check, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,12 +46,6 @@ export interface StartupFormData {
   conversionRate?: number;
 }
 
-const steps = [
-  { id: 1, title: "Business Info", description: "Tell us about your startup" },
-  { id: 2, title: "Market Info", description: "Define your market" },
-  { id: 3, title: "Metrics", description: "Optional performance data" },
-];
-
 const industries = [
   "SaaS",
   "E-commerce",
@@ -70,10 +65,18 @@ export function AddStartupModal({
   onComplete,
 }: AddStartupModalProps) {
   const router = useRouter();
+  const t = useTranslations("addStartup");
+  const tCommon = useTranslations("common");
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<StartupFormData>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const steps = [
+    { id: 1, title: t("businessInfo") },
+    { id: 2, title: t("marketInfo") },
+    { id: 3, title: t("metricsStep") },
+  ];
 
   const updateField = (
     field: keyof StartupFormData,
@@ -95,7 +98,7 @@ export function AddStartupModal({
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setError("Oturum bulunamadı, lütfen tekrar giriş yapın.");
+        setError(t("sessionNotFound"));
         setLoading(false);
         return;
       }
@@ -120,7 +123,7 @@ export function AddStartupModal({
         .single();
 
       if (insertError || !savedStartup) {
-        setError("Kayıt sırasında hata oluştu: " + insertError?.message);
+        setError(insertError?.message || tCommon("error"));
         setLoading(false);
         return;
       }
@@ -135,18 +138,14 @@ export function AddStartupModal({
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const canProceed = () => {
-    if (currentStep === 1) {
+    if (currentStep === 1)
       return formData.businessName && formData.industry && formData.description;
-    }
-    if (currentStep === 2) {
+    if (currentStep === 2)
       return formData.targetAudience && formData.customerProblem;
-    }
     return true;
   };
 
@@ -154,7 +153,7 @@ export function AddStartupModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Add New Startup</DialogTitle>
+          <DialogTitle className="text-xl">{t("title")}</DialogTitle>
         </DialogHeader>
 
         {/* Progress Steps */}
@@ -200,26 +199,25 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Step 1: Business Info */}
+        {/* Step 1 */}
         {currentStep === 1 && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="businessName">Business Name *</Label>
+              <Label htmlFor="businessName">{t("businessName")} *</Label>
               <Input
                 id="businessName"
-                placeholder="Enter your startup name"
                 value={formData.businessName || ""}
                 onChange={(e) => updateField("businessName", e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="industry">Industry *</Label>
+              <Label htmlFor="industry">{t("industry")} *</Label>
               <Select
                 value={formData.industry}
                 onValueChange={(value) => updateField("industry", value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select industry" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {industries.map((industry) => (
@@ -231,29 +229,26 @@ export function AddStartupModal({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Business Description *</Label>
+              <Label htmlFor="description">{t("description")} *</Label>
               <Textarea
                 id="description"
-                placeholder="Describe what your startup does..."
                 value={formData.description || ""}
                 onChange={(e) => updateField("description", e.target.value)}
                 rows={3}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="mainGoal">Main Goal</Label>
+              <Label htmlFor="mainGoal">{t("mainGoal")}</Label>
               <Input
                 id="mainGoal"
-                placeholder="What's your primary objective?"
                 value={formData.mainGoal || ""}
                 onChange={(e) => updateField("mainGoal", e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="targetCustomer">Target Customer</Label>
+              <Label htmlFor="targetCustomer">{t("targetCustomer")}</Label>
               <Input
                 id="targetCustomer"
-                placeholder="Who is your ideal customer?"
                 value={formData.targetCustomer || ""}
                 onChange={(e) => updateField("targetCustomer", e.target.value)}
               />
@@ -261,27 +256,26 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Step 2: Market Info */}
+        {/* Step 2 */}
         {currentStep === 2 && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="targetAudience">Target Audience *</Label>
+              <Label htmlFor="targetAudience">{t("targetAudience")} *</Label>
               <Textarea
                 id="targetAudience"
-                placeholder="Describe your target audience in detail..."
                 value={formData.targetAudience || ""}
                 onChange={(e) => updateField("targetAudience", e.target.value)}
                 rows={3}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="marketSize">Estimated Market Size</Label>
+              <Label htmlFor="marketSize">{t("marketSize")}</Label>
               <Select
                 value={formData.marketSize}
                 onValueChange={(value) => updateField("marketSize", value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select market size" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="small">Small (&lt;$1B)</SelectItem>
@@ -292,10 +286,9 @@ export function AddStartupModal({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="customerProblem">Main Customer Problem *</Label>
+              <Label htmlFor="customerProblem">{t("customerProblem")} *</Label>
               <Textarea
                 id="customerProblem"
-                placeholder="What problem are you solving?"
                 value={formData.customerProblem || ""}
                 onChange={(e) => updateField("customerProblem", e.target.value)}
                 rows={3}
@@ -304,16 +297,12 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Step 3: Metrics */}
+        {/* Step 3 */}
         {currentStep === 3 && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              These metrics are optional but help provide more accurate
-              analysis.
-            </p>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="users">Current Users</Label>
+                <Label htmlFor="users">{t("currentUsers")}</Label>
                 <Input
                   id="users"
                   type="number"
@@ -325,7 +314,7 @@ export function AddStartupModal({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="revenue">Monthly Revenue ($)</Label>
+                <Label htmlFor="revenue">{t("monthlyRevenue")}</Label>
                 <Input
                   id="revenue"
                   type="number"
@@ -385,14 +374,14 @@ export function AddStartupModal({
             disabled={currentStep === 1}
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
+            {tCommon("back")}
           </Button>
           <Button onClick={handleNext} disabled={!canProceed() || loading}>
             {loading
-              ? "Kaydediliyor..."
+              ? tCommon("saving")
               : currentStep === 3
-              ? "Create Startup"
-              : "Next"}
+              ? t("createStartup")
+              : tCommon("next")}
             {currentStep < 3 && <ChevronRight className="w-4 h-4 ml-1" />}
           </Button>
         </div>

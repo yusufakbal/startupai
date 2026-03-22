@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Sparkles, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,8 @@ import { createClient } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -37,7 +40,7 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError("Email veya şifre hatalı.");
+      setError(tCommon("error"));
       setLoading(false);
     } else {
       router.push("/dashboard");
@@ -56,8 +59,8 @@ export default function LoginPage() {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Hoş geldin</CardTitle>
-            <CardDescription>Hesabına giriş yap</CardDescription>
+            <CardTitle className="text-2xl">{t("login")}</CardTitle>
+            <CardDescription>{t("signInCta")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,13 +70,12 @@ export default function LoginPage() {
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="sen@example.com"
                     className="pl-9"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -83,13 +85,12 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Şifre</Label>
+                <Label htmlFor="password">{t("password")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Şifreni gir"
                     className="pl-9 pr-9"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -110,7 +111,7 @@ export default function LoginPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Giriş yapılıyor..." : "Giriş yap"}
+                {loading ? t("signingIn") : t("login")}
               </Button>
             </form>
 
@@ -119,12 +120,12 @@ export default function LoginPage() {
             </div>
 
             <p className="text-center text-sm text-muted-foreground">
-              Hesabın yok mu?{" "}
+              {t("noAccount")}{" "}
               <Link
                 href="/signup"
                 className="text-primary hover:underline font-medium"
               >
-                Kayıt ol
+                {t("signup")}
               </Link>
             </p>
           </CardContent>

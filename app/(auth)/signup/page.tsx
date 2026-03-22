@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Sparkles, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,8 @@ import { createClient } from "@/lib/supabase";
 
 export default function SignupPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -35,9 +38,7 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName },
-      },
+      options: { data: { full_name: fullName } },
     });
 
     if (error) {
@@ -60,8 +61,8 @@ export default function SignupPage() {
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Hesap oluştur</CardTitle>
-            <CardDescription>Girişimcilik yolculuğuna başla</CardDescription>
+            <CardTitle className="text-2xl">{t("signup")}</CardTitle>
+            <CardDescription>{t("signUpCta")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,13 +73,12 @@ export default function SignupPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="fullName">Ad Soyad</Label>
+                <Label htmlFor="fullName">{t("fullName")}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Adın Soyadın"
                     className="pl-9"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -88,13 +88,12 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="sen@example.com"
                     className="pl-9"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -104,13 +103,12 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Şifre</Label>
+                <Label htmlFor="password">{t("password")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="En az 6 karakter"
                     className="pl-9 pr-9"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -131,7 +129,7 @@ export default function SignupPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Hesap oluşturuluyor..." : "Hesap oluştur"}
+                {loading ? t("creatingAccount") : t("signup")}
               </Button>
             </form>
 
@@ -140,12 +138,12 @@ export default function SignupPage() {
             </div>
 
             <p className="text-center text-sm text-muted-foreground">
-              Zaten hesabın var mı?{" "}
+              {t("hasAccount")}{" "}
               <Link
                 href="/login"
                 className="text-primary hover:underline font-medium"
               >
-                Giriş yap
+                {t("login")}
               </Link>
             </p>
           </CardContent>

@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   Plus,
   Rocket,
@@ -22,6 +23,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase";
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +126,7 @@ export default function DashboardPage() {
     <div className="min-h-screen">
       <TopNav
         primaryAction={{
-          label: "Add Startup",
+          label: t("addStartup"),
           onClick: () => setShowAddStartup(true),
         }}
         onSearch={setSearchQuery}
@@ -136,10 +138,10 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-semibold text-foreground">
-                Your Startups
+                {t("yourStartups")}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Manage and track your ventures
+                {t("manageVentures")}
               </p>
             </div>
             <Button
@@ -164,20 +166,20 @@ export default function DashboardPage() {
                   <Rocket className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">
-                  No startups yet
+                  {t("noStartupsYet")}
                 </h3>
                 <p className="text-sm text-muted-foreground text-center mb-4">
-                  Add your first startup to get AI-powered insights
+                  {t("addFirstStartup")}
                 </p>
                 <Button onClick={() => setShowAddStartup(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Startup
+                  {t("addStartup")}
                 </Button>
               </CardContent>
             </Card>
           ) : filteredStartups.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4">
-              "{searchQuery}" için sonuç bulunamadı.
+              "{searchQuery}" {t("noResultsFor")}
             </p>
           ) : (
             <div className="relative px-6">
@@ -225,10 +227,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">
-                  Start Your Business Idea
+                  {t("startBusinessIdea")}
                 </h3>
                 <p className="text-muted-foreground">
-                  Get AI-powered analysis and a personalized growth roadmap
+                  {t("aiPoweredAnalysis")}
                 </p>
               </div>
             </div>
@@ -238,7 +240,7 @@ export default function DashboardPage() {
               className="w-full md:w-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Startup
+              {t("addStartup")}
             </Button>
           </CardContent>
         </Card>
@@ -251,10 +253,10 @@ export default function DashboardPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-foreground">
-                Startup Pulse
+                {t("startupPulse")}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Latest from the startup ecosystem
+                {t("latestEcosystem")}
               </p>
             </div>
           </div>

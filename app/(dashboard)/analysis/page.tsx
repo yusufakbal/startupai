@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, BarChart2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { TopNav } from "@/components/layout/top-nav";
 import { StartupCard, type StartupData } from "@/components/cards/startup-card";
 import { AddStartupModal } from "@/components/modals/add-startup-modal";
@@ -10,6 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase";
 
 export default function AnalysisPage() {
+  const t = useTranslations("analysis");
+  const tCommon = useTranslations("dashboard");
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,6 @@ export default function AnalysisPage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Startup ve analiz verilerini birlikte çek
     const { data: startupsData } = await supabase
       .from("startups")
       .select("*")
@@ -37,7 +39,6 @@ export default function AnalysisPage() {
       return;
     }
 
-    // Analizleri çek
     const { data: analysesData } = await supabase
       .from("analyses")
       .select(
@@ -45,7 +46,6 @@ export default function AnalysisPage() {
       )
       .eq("user_id", user.id);
 
-    // Startup ve analiz verilerini birleştir
     const mapped: StartupData[] = startupsData.map((s) => {
       const analysis = analysesData?.find((a) => a.startup_id === s.id);
       return {
@@ -69,23 +69,17 @@ export default function AnalysisPage() {
     <div className="min-h-screen">
       <TopNav
         primaryAction={{
-          label: "Add Startup",
+          label: tCommon("addStartup"),
           onClick: () => setShowAddStartup(true),
         }}
       />
 
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
-            Startup Analysis
-          </h1>
-          <p className="text-muted-foreground">
-            Select a startup to view detailed analysis
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("selectStartup")}</p>
         </div>
 
-        {/* Startups Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1].map((i) => (
@@ -113,14 +107,14 @@ export default function AnalysisPage() {
                 <BarChart2 className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-1">
-                No startups to analyze
+                {t("title")}
               </h3>
               <p className="text-sm text-muted-foreground text-center mb-4">
-                Add a startup to get AI-powered analysis
+                {t("selectStartup")}
               </p>
               <Button onClick={() => setShowAddStartup(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Startup
+                {tCommon("addStartup")}
               </Button>
             </CardContent>
           </Card>

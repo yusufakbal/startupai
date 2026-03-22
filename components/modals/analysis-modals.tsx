@@ -10,14 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   TrendingUp,
   Users,
   Target,
@@ -27,6 +19,7 @@ import {
   CheckCircle2,
   ArrowRight,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface AnalysisModalProps {
@@ -35,26 +28,26 @@ interface AnalysisModalProps {
   analysis: any;
 }
 
-// Market Analysis Modal
 export function MarketAnalysisModal({
   open,
   onOpenChange,
   analysis,
 }: AnalysisModalProps) {
+  const t = useTranslations("analysis");
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Market Analysis</DialogTitle>
+          <DialogTitle className="text-xl">{t("marketAnalysis")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Market Overview */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald" />
-                Market Overview
+                {t("marketAnalysis")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -64,7 +57,7 @@ export function MarketAnalysisModal({
                     {analysis?.market_size_estimate}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Market Size
+                    {t("marketSize")}
                   </div>
                 </div>
                 <div className="text-center p-3 bg-secondary/50 rounded-lg">
@@ -72,7 +65,7 @@ export function MarketAnalysisModal({
                     {analysis?.market_growth_rate}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Growth Rate
+                    {t("growthRate")}
                   </div>
                 </div>
                 <div className="text-center p-3 bg-secondary/50 rounded-lg">
@@ -80,19 +73,18 @@ export function MarketAnalysisModal({
                     {analysis?.market_score}/10
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Market Score
+                    {t("score")}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Target Segment */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Users className="w-4 h-4 text-indigo" />
-                Target Segment
+                {t("targetSegment")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -102,19 +94,18 @@ export function MarketAnalysisModal({
             </CardContent>
           </Card>
 
-          {/* Market Opportunity */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Target className="w-4 h-4 text-emerald" />
-                Market Opportunity Score
+                {t("growthPotential")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">
-                    Growth Potential
+                    {t("growthPotential")}
                   </span>
                   <span className="font-medium text-emerald">
                     {analysis?.growth_potential}%
@@ -125,13 +116,12 @@ export function MarketAnalysisModal({
             </CardContent>
           </Card>
 
-          {/* Market Drivers */}
           {analysis?.market_drivers?.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber" />
-                  Market Drivers
+                  {t("marketDrivers")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -152,12 +142,13 @@ export function MarketAnalysisModal({
   );
 }
 
-// Competition Analysis Modal
 export function CompetitionModal({
   open,
   onOpenChange,
   analysis,
 }: AnalysisModalProps) {
+  const t = useTranslations("analysis");
+
   const competitionColor = {
     Low: "text-emerald",
     Medium: "text-amber",
@@ -168,15 +159,16 @@ export function CompetitionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Competition Landscape</DialogTitle>
+          <DialogTitle className="text-xl">
+            {t("competitionAnalysis")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Competition Level */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">
-                Competition Level
+                {t("competitionLevel")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -192,7 +184,7 @@ export function CompetitionModal({
                   {analysis?.competition_level}
                 </div>
                 <div className="text-sm text-muted-foreground flex-1">
-                  Competition score: {analysis?.competition_score}/10
+                  {t("competitionScore")}: {analysis?.competition_score}/10
                 </div>
               </div>
               <Progress
@@ -202,12 +194,11 @@ export function CompetitionModal({
             </CardContent>
           </Card>
 
-          {/* Competitors Table */}
           {analysis?.competitors?.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">
-                  Top Competitors
+                  {t("topCompetitors")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -216,16 +207,16 @@ export function CompetitionModal({
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
-                          Competitor
+                          {t("competitor")}
                         </th>
                         <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
-                          Strength
+                          {t("strength")}
                         </th>
                         <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
-                          Weakness
+                          {t("weakness")}
                         </th>
                         <th className="text-left py-3 px-4 font-medium text-muted-foreground whitespace-nowrap">
-                          Position
+                          {t("position")}
                         </th>
                       </tr>
                     </thead>
@@ -253,13 +244,12 @@ export function CompetitionModal({
             </Card>
           )}
 
-          {/* Opportunities */}
           {analysis?.opportunities?.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Lightbulb className="w-4 h-4 text-amber" />
-                  Competitive Advantage Opportunities
+                  {t("opportunities")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -280,34 +270,33 @@ export function CompetitionModal({
   );
 }
 
-// AI Insight Modal
 export function AIInsightModal({
   open,
   onOpenChange,
   analysis,
 }: AnalysisModalProps) {
+  const t = useTranslations("analysis");
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">AI Strategic Insight</DialogTitle>
+          <DialogTitle className="text-xl">{t("aiInsight")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Full Summary */}
           <Card className="border-l-4 border-l-violet">
             <CardContent className="pt-6">
               <p className="text-sm leading-relaxed">{analysis?.summary}</p>
             </CardContent>
           </Card>
 
-          {/* Key Risks */}
           {analysis?.key_risks?.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-destructive" />
-                  Key Risks Detected
+                  {t("keyRisks")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -323,13 +312,12 @@ export function AIInsightModal({
             </Card>
           )}
 
-          {/* Opportunities */}
           {analysis?.opportunities?.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Lightbulb className="w-4 h-4 text-emerald" />
-                  Key Opportunities
+                  {t("opportunities")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -345,12 +333,11 @@ export function AIInsightModal({
             </Card>
           )}
 
-          {/* Recommendations */}
           {analysis?.recommendations?.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium">
-                  Recommended Strategic Actions
+                  {t("recommendations")}
                 </CardTitle>
               </CardHeader>
               <CardContent>

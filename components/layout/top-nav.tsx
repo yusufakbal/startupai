@@ -2,6 +2,8 @@
 
 import { Search, Bell, Plus, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MobileNav } from "./mobile-nav";
+import { createClient } from "@/lib/supabase";
 
 interface TopNavProps {
   primaryAction?: {
@@ -25,6 +28,15 @@ interface TopNavProps {
 
 export function TopNav({ primaryAction, onSearch }: TopNavProps) {
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("auth");
+  const tNav = useTranslations("nav");
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   return (
     <header className="sticky top-0 z-40 flex items-center h-16 px-4 md:px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -44,7 +56,6 @@ export function TopNav({ primaryAction, onSearch }: TopNavProps) {
 
       {/* Sağ taraf */}
       <div className="flex items-center gap-1 md:gap-2 ml-auto">
-        {/* Primary Action */}
         {primaryAction && (
           <Button
             onClick={primaryAction.onClick}
@@ -56,7 +67,6 @@ export function TopNav({ primaryAction, onSearch }: TopNavProps) {
           </Button>
         )}
 
-        {/* Theme Toggle */}
         <Button
           variant="ghost"
           size="icon"
@@ -68,14 +78,12 @@ export function TopNav({ primaryAction, onSearch }: TopNavProps) {
           <span className="sr-only">Toggle theme</span>
         </Button>
 
-        {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-4 w-4" />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-accent" />
           <span className="sr-only">Notifications</span>
         </Button>
 
-        {/* User Avatar */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -97,9 +105,15 @@ export function TopNav({ primaryAction, onSearch }: TopNavProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/settings")}>
+              {t("profile")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/settings")}>
+              {t("settingsMenu")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/billing")}>
+              {t("billingMenu")}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="sm:hidden"
@@ -107,8 +121,11 @@ export function TopNav({ primaryAction, onSearch }: TopNavProps) {
             >
               {theme === "dark" ? "Light Mode" : "Dark Mode"}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              Log out
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={handleLogout}
+            >
+              {t("logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

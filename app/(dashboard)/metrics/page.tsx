@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Users, DollarSign, BarChart2, Flag, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { TopNav } from "@/components/layout/top-nav";
 import { InsightCard } from "@/components/cards/insight-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ const positionColors: Record<string, string> = {
 };
 
 export default function MetricsPage() {
+  const t = useTranslations("metrics");
   const [startups, setStartups] = useState<any[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [startup, setStartup] = useState<any>(null);
@@ -36,7 +38,6 @@ export default function MetricsPage() {
   useEffect(() => {
     loadStartups();
   }, []);
-
   useEffect(() => {
     if (selectedId) loadDetail(selectedId);
   }, [selectedId]);
@@ -70,13 +71,11 @@ export default function MetricsPage() {
       .select("*")
       .eq("id", startupId)
       .single();
-
     const { data: analysisData } = await supabase
       .from("analyses")
       .select("*")
       .eq("startup_id", startupId)
       .single();
-
     const { data: roadmapData } = await supabase
       .from("roadmaps")
       .select("*")
@@ -85,11 +84,11 @@ export default function MetricsPage() {
 
     let tasksData: any[] = [];
     if (roadmapData) {
-      const { data: t } = await supabase
+      const { data: td } = await supabase
         .from("roadmap_tasks")
         .select("status")
         .eq("roadmap_id", roadmapData.id);
-      tasksData = t || [];
+      tasksData = td || [];
     }
 
     setStartup(startupData);
@@ -118,11 +117,10 @@ export default function MetricsPage() {
       <TopNav />
 
       <main className="p-4 md:p-6 lg:p-8">
-        {/* Startup Seçici + Başlık */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <Select value={selectedId} onValueChange={setSelectedId}>
             <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Startup seç" />
+              <SelectValue placeholder={t("selectStartup")} />
             </SelectTrigger>
             <SelectContent>
               {startups.map((s) => (
@@ -145,16 +143,14 @@ export default function MetricsPage() {
           </div>
         ) : startup ? (
           <div className="space-y-8">
-            {/* AI Strategic Insight */}
             {analysis?.summary && (
               <InsightCard
-                title="AI Strategic Insight"
+                title={t("aiInsight")}
                 content={analysis.summary}
                 type="ai"
               />
             )}
 
-            {/* Metrik Kartları */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="p-5">
@@ -166,7 +162,9 @@ export default function MetricsPage() {
                   <div className="text-2xl font-bold">
                     {(startup.users_count || 0).toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Users</div>
+                  <div className="text-sm text-muted-foreground">
+                    {t("users")}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -181,7 +179,7 @@ export default function MetricsPage() {
                     ${((startup.revenue || 0) / 1000).toFixed(1)}K
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Monthly Revenue
+                    {t("monthlyRevenue")}
                   </div>
                 </CardContent>
               </Card>
@@ -196,7 +194,9 @@ export default function MetricsPage() {
                   <div className="text-2xl font-bold text-violet">
                     {analysis?.score ?? "—"}/10
                   </div>
-                  <div className="text-sm text-muted-foreground">AI Score</div>
+                  <div className="text-sm text-muted-foreground">
+                    {t("aiScore")}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -211,26 +211,24 @@ export default function MetricsPage() {
                     {totalTasks > 0 ? `${completedTasks}/${totalTasks}` : "—"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Tasks Completed
+                    {t("tasksCompleted")}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* AI Recommendation */}
             {roadmap?.ai_recommendation && (
               <InsightCard
-                title="AI Recommendation"
+                title={t("aiRecommendation")}
                 content={roadmap.ai_recommendation}
                 type="opportunity"
               />
             )}
 
-            {/* Rakip Analizi — Yatay Kaydırmalı */}
             {analysis?.competitors && analysis.competitors.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold mb-4">
-                  Competitor Analysis
+                  {t("competitorAnalysis")}
                 </h2>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {analysis.competitors.map((competitor: any, i: number) => (
@@ -278,7 +276,7 @@ export default function MetricsPage() {
           </div>
         ) : (
           <div className="flex items-center justify-center min-h-[40vh]">
-            <p className="text-muted-foreground">Henüz startup eklenmemiş.</p>
+            <p className="text-muted-foreground">{t("selectStartup")}</p>
           </div>
         )}
       </main>
