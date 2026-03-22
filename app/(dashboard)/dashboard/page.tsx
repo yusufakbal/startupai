@@ -21,157 +21,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase";
 
-const pulseItems: PulseItem[] = [
-  {
-    id: "f1",
-    type: "funding",
-    title: "Stripe raises $6.5B at $50B valuation",
-    subtitle: "Series I funding round",
-    value: "$6.5B",
-    badge: "Hot",
-  },
-  {
-    id: "f2",
-    type: "funding",
-    title: "OpenAI closes $10B Microsoft deal",
-    subtitle: "Strategic partnership",
-    value: "$10B",
-  },
-  {
-    id: "f3",
-    type: "funding",
-    title: "Figma acquisition by Adobe cancelled",
-    subtitle: "Regulatory concerns",
-    badge: "Breaking",
-  },
-  {
-    id: "t1",
-    type: "trending",
-    title: "Perplexity AI",
-    subtitle: "AI-powered search engine",
-    growth: 340,
-    value: "10M+ users",
-  },
-  {
-    id: "t2",
-    type: "trending",
-    title: "Notion",
-    subtitle: "All-in-one workspace",
-    growth: 89,
-    value: "30M+ users",
-  },
-  {
-    id: "t3",
-    type: "trending",
-    title: "Linear",
-    subtitle: "Modern project management",
-    growth: 156,
-    value: "5000+ teams",
-  },
-  {
-    id: "g1",
-    type: "grants",
-    title: "Y Combinator W24 Applications Open",
-    subtitle: "Apply by Dec 15",
-    value: "$500K",
-    badge: "Apply Now",
-  },
-  {
-    id: "g2",
-    type: "grants",
-    title: "EU Innovation Fund",
-    subtitle: "Climate tech startups",
-    value: "€2M",
-  },
-  {
-    id: "g3",
-    type: "grants",
-    title: "AWS Activate Program",
-    subtitle: "Cloud credits for startups",
-    value: "$100K credits",
-  },
-  {
-    id: "top1",
-    type: "top",
-    title: "Anthropic",
-    subtitle: "AI Safety Research",
-    growth: 420,
-    value: "$4.1B raised",
-  },
-  {
-    id: "top2",
-    type: "top",
-    title: "Vercel",
-    subtitle: "Frontend Cloud Platform",
-    growth: 180,
-    value: "$150M ARR",
-  },
-  {
-    id: "top3",
-    type: "top",
-    title: "Mistral AI",
-    subtitle: "Open-source LLMs",
-    growth: 890,
-    value: "$2B valuation",
-  },
-  {
-    id: "p1",
-    type: "programs",
-    title: "Techstars Spring 2024",
-    subtitle: "Global accelerator program",
-    value: "$120K",
-    badge: "Open",
-  },
-  {
-    id: "p2",
-    type: "programs",
-    title: "500 Global Seed Program",
-    subtitle: "Early stage funding",
-    value: "$150K",
-  },
-  {
-    id: "p3",
-    type: "programs",
-    title: "Google for Startups",
-    subtitle: "Founder mentorship",
-    value: "$200K credits",
-  },
-  {
-    id: "c1",
-    type: "news",
-    title: "Singapore Startup Visa Extended",
-    subtitle: "Tech.Pass now 3 years",
-    badge: "Policy",
-  },
-  {
-    id: "c2",
-    type: "news",
-    title: "UK SEIS Tax Relief Increased",
-    subtitle: "50% relief for investors",
-    value: "£250K limit",
-  },
-  {
-    id: "c3",
-    type: "news",
-    title: "UAE Golden Visa for Founders",
-    subtitle: "10-year residency",
-    badge: "New",
-  },
-];
-
-const fundingNews = pulseItems.filter((item) => item.type === "funding");
-const trendingStartups = pulseItems.filter((item) => item.type === "trending");
-const grantsSupport = pulseItems.filter((item) => item.type === "grants");
-const topGrowing = pulseItems.filter((item) => item.type === "top");
-const programs = pulseItems.filter((item) => item.type === "programs");
-const countryNews = pulseItems.filter((item) => item.type === "news");
-
 export default function DashboardPage() {
   const [showAddStartup, setShowAddStartup] = useState(false);
   const [startups, setStartups] = useState<StartupData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showArrows, setShowArrows] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pulseItems, setPulseItems] = useState<PulseItem[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
@@ -184,6 +40,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadStartups();
+    loadPulse();
   }, []);
 
   useEffect(() => {
@@ -226,9 +83,42 @@ export default function DashboardPage() {
     setLoading(false);
   };
 
+  const loadPulse = async () => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("pulse_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("type")
+      .order("order_index");
+
+    if (data) {
+      setPulseItems(
+        data.map((item) => ({
+          id: item.id,
+          type: item.type as PulseItem["type"],
+          title: item.title,
+          subtitle: item.subtitle,
+          value: item.value,
+          growth: item.growth,
+          badge: item.badge,
+        }))
+      );
+    }
+  };
+
   const filteredStartups = startups.filter((s) =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const fundingNews = pulseItems.filter((item) => item.type === "funding");
+  const trendingStartups = pulseItems.filter(
+    (item) => item.type === "trending"
+  );
+  const grantsSupport = pulseItems.filter((item) => item.type === "grants");
+  const topGrowing = pulseItems.filter((item) => item.type === "top");
+  const programs = pulseItems.filter((item) => item.type === "programs");
+  const countryNews = pulseItems.filter((item) => item.type === "news");
 
   return (
     <div className="min-h-screen">
