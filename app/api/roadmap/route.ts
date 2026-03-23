@@ -122,7 +122,7 @@ ${
 }
 
 Create exactly 4 phases: "Validate Idea", "Acquire Users", "Product Growth", "Scale".
-Each phase must have at least 3 tasks.
+Each phase must have minimum 3, maximum 5 tasks.
 
 IMPORTANT: For tools, provide real platform URLs. Use this exact format for tools.
 
@@ -163,7 +163,7 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
 
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5",
-      max_tokens: 8000,
+      max_tokens: 5000,
       messages: [{ role: "user", content: prompt }],
     });
 
