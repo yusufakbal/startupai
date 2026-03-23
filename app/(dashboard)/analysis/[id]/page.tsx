@@ -268,7 +268,7 @@ export default function AnalysisDetailPage({
               <div className="grid grid-cols-3 gap-3 mb-3">
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Market Size
+                    {t("marketSize")}
                   </div>
                   <div className="font-semibold text-sm leading-tight">
                     {analysis?.market_size_estimate}
@@ -276,7 +276,7 @@ export default function AnalysisDetailPage({
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Growth Rate
+                    {t("growthRate")}
                   </div>
                   <div className="font-semibold text-sm text-emerald">
                     {analysis?.market_growth_rate}
@@ -284,7 +284,7 @@ export default function AnalysisDetailPage({
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Score
+                    {t("score")}
                   </div>
                   <div className="font-semibold text-sm">
                     {analysis?.market_score}/10
@@ -312,7 +312,7 @@ export default function AnalysisDetailPage({
               <div className="flex items-center gap-4 mb-3">
                 <div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Competition Level
+                    {t("competitionLevel")}
                   </div>
                   <Badge
                     variant="secondary"
@@ -327,7 +327,7 @@ export default function AnalysisDetailPage({
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-muted-foreground mb-1">
-                    Market Position
+                    {t("marketPosition")}
                   </div>
                   <Progress
                     value={analysis?.competition_score * 10}
@@ -336,7 +336,8 @@ export default function AnalysisDetailPage({
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                {analysis?.competitors?.length || 0} competitors identified
+                {analysis?.competitors?.length || 0}{" "}
+                {t("competitorsIdentified")}
               </p>
             </CardContent>
           </Card>

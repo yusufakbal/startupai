@@ -265,7 +265,9 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <DollarSign className="w-4 h-4 text-emerald" />
-                <h3 className="font-medium text-foreground">Recent Funding</h3>
+                <h3 className="font-medium text-foreground">
+                  {t("recentFunding")}
+                </h3>
               </div>
               <div className="space-y-3">
                 {fundingNews.map((item) => (
@@ -277,7 +279,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-4 h-4 text-emerald" />
                 <h3 className="font-medium text-foreground">
-                  Trending Startups
+                  {t("trendingStartups")}
                 </h3>
               </div>
               <div className="space-y-3">
@@ -290,7 +292,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Award className="w-4 h-4 text-amber" />
                 <h3 className="font-medium text-foreground">
-                  Grants & Support
+                  {t("grantsSupport")}
                 </h3>
               </div>
               <div className="space-y-3">
@@ -302,7 +304,9 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Rocket className="w-4 h-4 text-violet" />
-                <h3 className="font-medium text-foreground">Top Growing</h3>
+                <h3 className="font-medium text-foreground">
+                  {t("topGrowing")}
+                </h3>
               </div>
               <div className="space-y-3">
                 {topGrowing.map((item) => (
@@ -314,7 +318,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Briefcase className="w-4 h-4 text-indigo" />
                 <h3 className="font-medium text-foreground">
-                  Programs & Accelerators
+                  {t("programsAccelerators")}
                 </h3>
               </div>
               <div className="space-y-3">
@@ -327,7 +331,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Globe className="w-4 h-4 text-indigo" />
                 <h3 className="font-medium text-foreground">
-                  Country Incentives
+                  {t("countryIncentives")}
                 </h3>
               </div>
               <div className="space-y-3">

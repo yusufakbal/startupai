@@ -305,7 +305,7 @@ export default function RoadmapDetailPage({
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h1 className="text-2xl font-bold text-foreground">
-              {startup?.name} Roadmap
+              {startup?.name} {t("roadmapSuffix")}
             </h1>
             <div className="flex gap-3">
               <Button
@@ -475,7 +475,11 @@ export default function RoadmapDetailPage({
                                   ]
                                 )}
                               >
-                                {task.difficulty}
+                                {task.difficulty === "Easy"
+                                  ? tStartups("easy")
+                                  : task.difficulty === "Medium"
+                                  ? tStartups("medium")
+                                  : tStartups("hard")}
                               </Badge>
                               <Badge
                                 variant="outline"
@@ -486,7 +490,11 @@ export default function RoadmapDetailPage({
                                   ]
                                 )}
                               >
-                                {task.priority}
+                                {task.priority === "low"
+                                  ? tStartups("low")
+                                  : task.priority === "medium"
+                                  ? tStartups("medium")
+                                  : tStartups("high")}
                               </Badge>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-1">

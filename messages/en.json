@@ -18,7 +18,13 @@
     "latestEcosystem": "Latest from the startup ecosystem",
     "startBusinessIdea": "Start Your Business Idea",
     "aiPoweredAnalysis": "Get AI-powered analysis and a personalized growth roadmap",
-    "noResultsFor": "No results found for"
+    "noResultsFor": "No results found for",
+    "recentFunding": "Recent Funding",
+    "trendingStartups": "Trending Startups",
+    "grantsSupport": "Grants & Support",
+    "topGrowing": "Top Growing",
+    "programsAccelerators": "Programs & Accelerators",
+    "countryIncentives": "Country Incentives"
   },
   "analysis": {
     "title": "Startup Analysis",
@@ -56,7 +62,8 @@
     "competitionScore": "Competition Score",
     "summary": "Summary",
     "fullInsight": "Full AI Insight",
-    "generatingWait": "This may take 10-20 seconds"
+    "generatingWait": "This may take 10-20 seconds",
+    "competitorsIdentified": "competitors identified"
   },
   "roadmap": {
     "title": "Growth Roadmaps",
@@ -87,7 +94,8 @@
     "revenueLabel": "Revenue",
     "growthLabel": "Growth",
     "phase": "Phase",
-    "generatingWait": "This may take 15-30 seconds"
+    "generatingWait": "This may take 15-30 seconds",
+    "roadmapSuffix": "Roadmap"
   },
   "metrics": {
     "title": "Metrics",
@@ -120,7 +128,20 @@
     "tasks": "tasks",
     "totalStartups": "Total Startups",
     "inGrowth": "In Growth",
-    "inIdeaStage": "In Idea Stage"
+    "inIdeaStage": "In Idea Stage",
+    "easy": "Easy",
+    "medium": "Medium", 
+    "hard": "Hard",
+    "low": "Low",
+    "high": "High",
+    "leader": "Leader",
+    "challenger": "Challenger",
+    "niche": "Niche",
+    "follower": "Follower",
+    "validateIdea": "Validate Idea",
+    "acquireUsers": "Acquire Users",
+    "productGrowth": "Product Growth",
+    "scale": "Scale"
   },
   "settings": {
     "title": "Settings",

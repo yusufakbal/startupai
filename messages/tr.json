@@ -18,7 +18,13 @@
     "latestEcosystem": "Startup ekosisteminden son gelişmeler",
     "startBusinessIdea": "İş Fikrini Hayata Geçir",
     "aiPoweredAnalysis": "AI destekli analiz ve kişiselleştirilmiş büyüme yol haritası al",
-    "noResultsFor": "Sonuç bulunamadı"
+    "noResultsFor": "Sonuç bulunamadı",
+    "recentFunding": "Son Yatırımlar",
+    "trendingStartups": "Yükselen Startuplar",
+    "grantsSupport": "Hibe ve Destekler",
+    "topGrowing": "En Hızlı Büyüyenler",
+    "programsAccelerators": "Program ve Hızlandırıcılar",
+    "countryIncentives": "Ülke Teşvikleri"
   },
   "analysis": {
     "title": "Startup Analizi",
@@ -56,7 +62,8 @@
     "competitionScore": "Rekabet Skoru",
     "summary": "Özet",
     "fullInsight": "Tam AI Analizi",
-    "generatingWait": "Bu işlem 10-20 saniye sürebilir"
+    "generatingWait": "Bu işlem 10-20 saniye sürebilir",
+    "competitorsIdentified": "rakip tespit edildi"
   },
   "roadmap": {
     "title": "Büyüme Yol Haritaları",
@@ -87,7 +94,8 @@
     "revenueLabel": "Gelir",
     "growthLabel": "Büyüme",
     "phase": "Faz",
-    "generatingWait": "Bu işlem 15-30 saniye sürebilir"
+    "generatingWait": "Bu işlem 15-30 saniye sürebilir",
+    "roadmapSuffix": "Yol Haritası"
   },
   "metrics": {
     "title": "Metrikler",
@@ -120,7 +128,20 @@
     "tasks": "görev",
     "totalStartups": "Toplam İş",
     "inGrowth": "Büyüme Aşamasında",
-    "inIdeaStage": "Fikir Aşamasında"
+    "inIdeaStage": "Fikir Aşamasında",
+    "easy": "Kolay",
+    "medium": "Orta",
+    "hard": "Zor",
+    "low": "Düşük",
+    "high": "Yüksek",
+    "leader": "Lider",
+    "challenger": "Rakip",
+    "niche": "Niş",
+    "follower": "Takipçi",
+    "validateIdea": "Fikri Doğrula",
+    "acquireUsers": "Kullanıcı Kazan",
+    "productGrowth": "Ürün Büyümesi",
+    "scale": "Ölçeklen"
   },
   "settings": {
     "title": "Ayarlar",
