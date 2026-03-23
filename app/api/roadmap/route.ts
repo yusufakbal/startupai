@@ -121,7 +121,11 @@ ${
     : ""
 }
 
-Create exactly 4 phases: "Validate Idea", "Acquire Users", "Product Growth", "Scale".
+First, evaluate the company's growth stage based on the startup data and analysis provided:
+- If the company is early-stage (low user penetration, pre-revenue or early revenue), use exactly these 4 phase names: "Validate Idea", "Acquire Users", "Product Growth", "Scale"
+- If the company is mid-scale (growing user base, consistent revenue, some market presence), create 4 phases appropriate for a mid-scale company focused on optimization, retention and market expansion
+- If the company is advanced (significant market penetration, strong revenue, established brand), create 4 phases appropriate for a mature company focused on market leadership, internationalization and strategic partnerships
+
 Each phase must have minimum 3, maximum 5 tasks.
 
 IMPORTANT: For tools, provide real platform URLs. Use this exact format for tools.

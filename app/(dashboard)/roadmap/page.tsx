@@ -83,7 +83,7 @@ export default function RoadmapPage() {
     <div className="min-h-screen">
       <TopNav
         primaryAction={{
-          label: t("title"),
+          label: tDashboard("addStartup"),
           onClick: () => setShowAddStartup(true),
         }}
       />
