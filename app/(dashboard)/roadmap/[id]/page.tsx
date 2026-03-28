@@ -46,6 +46,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { UpgradeModal } from "@/components/modals/upgrade-modal";
 
 const phaseStatusColors = {
   completed: "bg-emerald text-white",
@@ -87,6 +88,8 @@ export default function RoadmapDetailPage({
   const [showUpdateRoadmapDialog, setShowUpdateRoadmapDialog] = useState(false);
   const [showMetricsModal, setShowMetricsModal] = useState(false);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeLimit, setUpgradeLimit] = useState<number | undefined>();
   const [metrics, setMetrics] = useState({
     users_count: 0,
     revenue: 0,
@@ -157,7 +160,12 @@ export default function RoadmapDetailPage({
       });
       const data = await res.json();
       if (!data.success) {
-        setError(data.error);
+        if (data.error === "LIMIT_REACHED") {
+          setUpgradeLimit(data.limit);
+          setShowUpgradeModal(true);
+        } else {
+          setError(data.error);
+        }
       } else {
         setRoadmap(data.roadmap);
         setPhases(data.phases || []);
@@ -684,6 +692,12 @@ export default function RoadmapDetailPage({
           </div>
         </DialogContent>
       </Dialog>
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        limitType="roadmaps"
+        limit={upgradeLimit}
+      />
     </div>
   );
 }

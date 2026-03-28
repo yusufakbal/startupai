@@ -247,5 +247,18 @@
     "users": "Users",
     "revenue": "Revenue ($)",
     "growthRate": "Growth Rate (%)"
+  },
+  "upgrade": {
+    "limitReachedTitle": "Plan Limit Reached",
+    "analysisLimitDesc": "You've used all {limit} AI analyses for this month on the Free plan.",
+    "roadmapLimitDesc": "You've used all {limit} roadmaps for this month on the Free plan.",
+    "startupLimitDesc": "You've reached the maximum of {limit} startups on the Free plan.",
+    "upgradeButton": "Upgrade to Pro",
+    "cancelButton": "Maybe Later",
+    "proFeature1": "Unlimited startups",
+    "proFeature2": "Unlimited AI analyses",
+    "proFeature3": "Unlimited roadmaps",
+    "proFeature4": "Priority support",
+    "priceLabel": "$9.99/month"
   }
 }

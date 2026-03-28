@@ -27,6 +27,7 @@ import {
   CompetitionModal,
   AIInsightModal,
 } from "@/components/modals/analysis-modals";
+import { UpgradeModal } from "@/components/modals/upgrade-modal";
 import { createClient } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,8 @@ export default function AnalysisDetailPage({
   const [showMarketModal, setShowMarketModal] = useState(false);
   const [showCompetitionModal, setShowCompetitionModal] = useState(false);
   const [showAIInsightModal, setShowAIInsightModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeLimit, setUpgradeLimit] = useState<number | undefined>();
 
   useEffect(() => {
     loadData();
@@ -99,7 +102,12 @@ export default function AnalysisDetailPage({
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.error);
+        if (data.error === "LIMIT_REACHED") {
+          setUpgradeLimit(data.limit);
+          setShowUpgradeModal(true);
+        } else {
+          setError(data.error);
+        }
       } else {
         setAnalysis(data.analysis);
       }
@@ -141,7 +149,7 @@ export default function AnalysisDetailPage({
     );
   }
 
-  if (error) {
+  if (error && !analysis) {
     return (
       <div className="min-h-screen">
         <TopNav />
@@ -202,7 +210,6 @@ export default function AnalysisDetailPage({
           </div>
         </div>
 
-        {/* Score Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-5">
@@ -241,7 +248,6 @@ export default function AnalysisDetailPage({
           />
         </div>
 
-        {/* AI Summary */}
         <div className="mb-8">
           <InsightCard
             title={t("aiInsight")}
@@ -251,7 +257,6 @@ export default function AnalysisDetailPage({
           />
         </div>
 
-        {/* Market & Competition */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card
             className="cursor-pointer hover:shadow-md hover:border-primary/20 transition-all"
@@ -343,7 +348,6 @@ export default function AnalysisDetailPage({
           </Card>
         </div>
 
-        {/* SWOT */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-3">
@@ -407,7 +411,6 @@ export default function AnalysisDetailPage({
           </Card>
         </div>
 
-        {/* Recommendations */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -444,6 +447,12 @@ export default function AnalysisDetailPage({
         open={showAIInsightModal}
         onOpenChange={setShowAIInsightModal}
         analysis={analysis}
+      />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        limitType="analyses"
+        limit={upgradeLimit}
       />
     </div>
   );

@@ -247,5 +247,18 @@
     "users": "Kullanıcı Sayısı",
     "revenue": "Gelir ($)",
     "growthRate": "Büyüme Oranı (%)"
+  },
+  "upgrade": {
+    "limitReachedTitle": "Plan Limitine Ulaştınız",
+    "analysisLimitDesc": "Free planda bu ay için {limit} AI analizinin tamamını kullandınız.",
+    "roadmapLimitDesc": "Free planda bu ay için {limit} yol haritasının tamamını kullandınız.",
+    "startupLimitDesc": "Free planda maksimum {limit} iş limitine ulaştınız.",
+    "upgradeButton": "Pro'ya Geç",
+    "cancelButton": "Şimdi Değil",
+    "proFeature1": "Sınırsız iş",
+    "proFeature2": "Sınırsız AI analizi",
+    "proFeature3": "Sınırsız yol haritası",
+    "proFeature4": "Öncelikli destek",
+    "priceLabel": "$9.99/ay"
   }
 }
