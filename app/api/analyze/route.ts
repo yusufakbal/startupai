@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getPlanLimits, type PlanType } from "@/lib/plans";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -34,13 +35,71 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Profil bilgilerini çek (plan + kullanım + dil)
     const { data: profile } = await supabase
       .from("profiles")
-      .select("language")
+      .select("language, plan, analyses_used_this_month, usage_reset_date")
       .eq("id", user.id)
       .single();
 
     const language = profile?.language === "tr" ? "Turkish" : "English";
+    const plan = (profile?.plan ?? "free") as PlanType;
+    const limits = getPlanLimits(plan);
+
+    // Aylık kullanım sıfırlama kontrolü
+    const resetDate = profile?.usage_reset_date
+      ? new Date(profile.usage_reset_date)
+      : new Date(0);
+    const daysSinceReset =
+      (Date.now() - resetDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    let analysesUsed = profile?.analyses_used_this_month ?? 0;
+
+    if (daysSinceReset >= 30) {
+      analysesUsed = 0;
+      await supabase
+        .from("profiles")
+        .update({
+          analyses_used_this_month: 0,
+          usage_reset_date: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+    }
+
+    // Mevcut analiz var mı kontrol et
+    const { data: existingAnalysis } = await supabase
+      .from("analyses")
+      .select("*")
+      .eq("startup_id", startup_id)
+      .eq("user_id", user.id)
+      .single();
+
+    // Cache'den dön (limit kontrolü yok)
+    if (existingAnalysis && !force) {
+      return NextResponse.json({
+        success: true,
+        analysis: existingAnalysis,
+        cached: true,
+      });
+    }
+
+    // Yeni analiz veya yeniden analiz — limit kontrolü
+    if (
+      limits.maxAnalysesPerMonth !== Infinity &&
+      analysesUsed >= limits.maxAnalysesPerMonth
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "LIMIT_REACHED",
+          limitType: "analyses",
+          used: analysesUsed,
+          limit: limits.maxAnalysesPerMonth,
+          plan,
+        },
+        { status: 403 }
+      );
+    }
 
     const { data: startup, error: startupError } = await supabase
       .from("startups")
@@ -56,22 +115,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data: existingAnalysis } = await supabase
-      .from("analyses")
-      .select("*")
-      .eq("startup_id", startup_id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (existingAnalysis && !force) {
-      return NextResponse.json({
-        success: true,
-        analysis: existingAnalysis,
-        cached: true,
-      });
-    }
-
-    const prompt = `You are an expert startup advisor.Respond ENTIRELY in ${language}. All text fields must be in ${language}. Analyze the following startup thoroughly.
+    const prompt = `You are an expert startup advisor. Respond ENTIRELY in ${language}. All text fields must be in ${language}. Analyze the following startup thoroughly.
 
 Startup Information:
 - Name: ${startup.name}
@@ -193,6 +237,12 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
     if (saveError) {
       throw new Error("Failed to save analysis: " + saveError.message);
     }
+
+    // Kullanım sayacını artır
+    await supabase
+      .from("profiles")
+      .update({ analyses_used_this_month: analysesUsed + 1 })
+      .eq("id", user.id);
 
     return NextResponse.json({
       success: true,

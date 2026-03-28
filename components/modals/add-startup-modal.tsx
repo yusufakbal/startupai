@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
+import { getPlanLimits, type PlanType } from "@/lib/plans";
 
 interface AddStartupModalProps {
   open: boolean;
@@ -103,6 +104,33 @@ export function AddStartupModal({
         return;
       }
 
+      // Plan ve startup sayısını kontrol et
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("id", user.id)
+        .single();
+
+      const plan = (profile?.plan ?? "free") as PlanType;
+      const limits = getPlanLimits(plan);
+
+      if (limits.maxStartups !== Infinity) {
+        const { count } = await supabase
+          .from("startups")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        if (count !== null && count >= limits.maxStartups) {
+          setError(
+            plan === "free"
+              ? `Free plan allows maximum ${limits.maxStartups} startups. Please upgrade to Pro.`
+              : `You have reached the maximum number of startups for your plan.`
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       const { data: savedStartup, error: insertError } = await supabase
         .from("startups")
         .insert({
@@ -156,7 +184,6 @@ export function AddStartupModal({
           <DialogTitle className="text-xl">{t("title")}</DialogTitle>
         </DialogHeader>
 
-        {/* Progress Steps */}
         <div className="flex items-center justify-between mb-6">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
@@ -199,7 +226,6 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Step 1 */}
         {currentStep === 1 && (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -256,7 +282,6 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Step 2 */}
         {currentStep === 2 && (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -297,7 +322,6 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Step 3 */}
         {currentStep === 3 && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -366,7 +390,6 @@ export function AddStartupModal({
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex items-center justify-between pt-4 border-t">
           <Button
             variant="ghost"

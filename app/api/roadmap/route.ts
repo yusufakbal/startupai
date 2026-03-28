@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getPlanLimits, type PlanType } from "@/lib/plans";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -34,13 +35,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Profil bilgilerini çek (plan + kullanım + dil)
     const { data: profile } = await supabase
       .from("profiles")
-      .select("language")
+      .select("language, plan, roadmaps_used_this_month, usage_reset_date")
       .eq("id", user.id)
       .single();
 
     const language = profile?.language === "tr" ? "Turkish" : "English";
+    const plan = (profile?.plan ?? "free") as PlanType;
+    const limits = getPlanLimits(plan);
+
+    // Aylık kullanım sıfırlama kontrolü
+    const resetDate = profile?.usage_reset_date
+      ? new Date(profile.usage_reset_date)
+      : new Date(0);
+    const daysSinceReset =
+      (Date.now() - resetDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    let roadmapsUsed = profile?.roadmaps_used_this_month ?? 0;
+
+    if (daysSinceReset >= 30) {
+      roadmapsUsed = 0;
+      await supabase
+        .from("profiles")
+        .update({
+          roadmaps_used_this_month: 0,
+          usage_reset_date: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+    }
 
     const { data: startup } = await supabase
       .from("startups")
@@ -70,6 +94,7 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
+    // Cache'den dön (limit kontrolü yok)
     if (existingRoadmap && !force) {
       const { data: phases } = await supabase
         .from("roadmap_phases")
@@ -90,6 +115,24 @@ export async function POST(req: NextRequest) {
         tasks,
         cached: true,
       });
+    }
+
+    // Yeni roadmap veya yeniden oluşturma — limit kontrolü
+    if (
+      limits.maxRoadmapsPerMonth !== Infinity &&
+      roadmapsUsed >= limits.maxRoadmapsPerMonth
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "LIMIT_REACHED",
+          limitType: "roadmaps",
+          used: roadmapsUsed,
+          limit: limits.maxRoadmapsPerMonth,
+          plan,
+        },
+        { status: 403 }
+      );
     }
 
     if (existingRoadmap && force) {
@@ -232,6 +275,12 @@ Respond ONLY with a valid JSON object, no markdown, no extra text:
         if (savedTask) allTasks.push(savedTask);
       }
     }
+
+    // Kullanım sayacını artır
+    await supabase
+      .from("profiles")
+      .update({ roadmaps_used_this_month: roadmapsUsed + 1 })
+      .eq("id", user.id);
 
     return NextResponse.json({
       success: true,
